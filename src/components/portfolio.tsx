@@ -2,42 +2,54 @@
 
 import { useState } from "react";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Github, Linkedin, Twitter } from "lucide-react";
+import { Moon, Sun, Github, Linkedin, Twitter, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Portfolio() {
   const [activeSection, setActiveSection] = useState("about");
   const { theme, setTheme } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navItems = ["About", "Experience", "Skills", "Achievements", "Socials"];
+  const navItems = ["About", "Experience", "Skills", "Achievements", "Contact"];
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
       <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8">
         <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-14 items-center justify-between">
-            <nav className="flex items-center space-x-2 text-sm font-medium">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={toggleMenu}
+              aria-label="Toggle Menu"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </Button>
+            <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
               {navItems.map((item) => (
-                <>
-                  <Link
-                    key={item.toLowerCase()}
-                    href={`#${item.toLowerCase()}`}
-                    className={`transition-colors hover:text-foreground/80 ${
-                      activeSection === item.toLowerCase()
-                        ? "text-foreground"
-                        : "text-foreground/60"
-                    }`}
-                    onClick={() => setActiveSection(item.toLowerCase())}
-                  >
-                    {item}
-                  </Link>
-                  <span className="">&nbsp;·&nbsp;</span>
-                </>
+                <Link
+                  key={item.toLowerCase()}
+                  href={`#${item.toLowerCase()}`}
+                  className={`transition-colors hover:text-foreground/80 ${
+                    activeSection === item.toLowerCase()
+                      ? "text-foreground"
+                      : "text-foreground/60"
+                  }`}
+                  onClick={() => setActiveSection(item.toLowerCase())}
+                >
+                  {item}
+                </Link>
               ))}
               <Link
-                href="https://sugatobagchi.hashnode.dev/"
-                target="_blank"
+                href="/blog"
                 className="transition-colors hover:text-foreground/80 text-foreground/60"
               >
                 Blog
@@ -56,14 +68,40 @@ export default function Portfolio() {
               )}
             </Button>
           </div>
+          {isMenuOpen && (
+            <nav className="md:hidden py-4 px-2 space-y-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.toLowerCase()}
+                  href={`#${item.toLowerCase()}`}
+                  className={`block py-2 px-4 rounded transition-colors hover:bg-accent ${
+                    activeSection === item.toLowerCase() ? "bg-accent" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveSection(item.toLowerCase());
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  {item}
+                </Link>
+              ))}
+              <Link
+                href="/blog"
+                className="block py-2 px-4 rounded transition-colors hover:bg-accent"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Blog
+              </Link>
+            </nav>
+          )}
         </header>
 
         <main className="py-6 md:py-12">
           <section id="about" className="mb-12">
             <h2 className="text-3xl font-bold mb-4">About Me</h2>
             <p>
-              Hey, I&apos;m <strong>Sugato Bagchi</strong>. I love building things,
-              trying out new dishes and talking with new people!
+              Hey, I&apos;m <strong>Sugato Bagchi</strong>. I love building
+              things, trying out new dishes and talking with new people!
             </p>
           </section>
 
@@ -188,7 +226,8 @@ export default function Portfolio() {
               </li>
               <li>Innerve 7.0 1st prize winner in 5ireChain track.</li>
               <li>
-              HackNITR 4.0 1st prize winner in Solana track. Finalist out of 330+ teams
+                HackNITR 4.0 1st prize winner in Solana track. Finalist out of
+                330+ teams
               </li>
             </ul>
           </section>
@@ -351,4 +390,3 @@ function TwitterIcon(props: any) {
     </svg>
   );
 }
-

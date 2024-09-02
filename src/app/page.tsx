@@ -1,6 +1,22 @@
-import Image from "next/image";
-import Portfolio  from "@/components/portfolio";
+"use client";
+
+import Portfolio from "@/components/portfolio";
+import { Analytics } from "@vercel/analytics/react";
+import { useEffect } from "react";
+import { analytics } from "@/lib/firebaseConfig"; // Adjust the import path accordingly
+import { logEvent } from "firebase/analytics";
 
 export default function Home() {
-  return <Portfolio />;
+  useEffect(() => {
+    if (analytics) {
+      logEvent(analytics, "page_view");
+    }
+  }, []);
+
+  return (
+    <div className="">
+      <Portfolio />
+      <Analytics />
+    </div>
+  );
 }
