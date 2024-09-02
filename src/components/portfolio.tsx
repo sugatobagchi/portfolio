@@ -11,7 +11,7 @@ export default function Portfolio() {
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navItems = ["About", "Experience", "Skills", "Achievements", "Contact"];
+  const navItems = ["About", "Experience", "Skills", "Achievements", "Socials"];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -49,7 +49,7 @@ export default function Portfolio() {
                 </Link>
               ))}
               <Link
-                href="/blog"
+                href="https://sugatobagchi.hashnode.dev/"
                 className="transition-colors hover:text-foreground/80 text-foreground/60"
               >
                 Blog
