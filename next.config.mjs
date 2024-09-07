@@ -1,33 +1,40 @@
 /** @type {import('next').NextConfig} */
 
 const base_url = process.env.NEXT_PUBLIC_MEET_URL;
+const resume_url = process.env.NEXT_PUBLIC_RESUME_URL;
 
 const nextConfig = {
-    redirects: async () => {
-        const redirectsArray = [];
-        
-        for (let i = 1; i <= 9; i++) {
-            redirectsArray.push({
-                source: `/meet${i}`,
-                destination: `${base_url}?authuser=${i}`,
-                permanent: true,
-            });
-        }
+  redirects: async () => {
+    const redirectsArray = [];
 
-        redirectsArray.push({
-            source: '/meet',
-            destination: `${base_url}`,
-            permanent: true,
-        });
+    for (let i = 1; i <= 9; i++) {
+      redirectsArray.push({
+        source: `/meet${i}`,
+        destination: `${base_url}?authuser=${i}`,
+        permanent: true,
+      });
+    }
 
-        redirectsArray.push({
-            source: '/meet:authuser(\\d+)',
-            destination: `${base_url}`, 
-            permanent: true,
-        });
+    redirectsArray.push({
+      source: "/meet",
+      destination: `${base_url}`,
+      permanent: true,
+    });
 
-        return redirectsArray;
-    },
+    redirectsArray.push({
+      source: "/meet:authuser(\\d+)",
+      destination: `${base_url}`,
+      permanent: true,
+    });
+
+    redirectsArray.push({
+      source: "/resume",
+      destination: `${resume_url}`,
+      permanent: true,
+    });
+
+    return redirectsArray;
+  },
 };
 
 export default nextConfig;
