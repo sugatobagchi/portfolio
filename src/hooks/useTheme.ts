@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export function useTheme() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -9,7 +9,8 @@ export function useTheme() {
       setTheme(savedTheme);
       document.documentElement.classList.add(savedTheme);
     } else {
-      document.documentElement.classList.add("light");
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
     }
   }, []);
 
