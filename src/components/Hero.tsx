@@ -2,6 +2,7 @@ import { socials } from "@/data/socials";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { SiGithub, SiLinkedin, SiX, SiInstagram } from "react-icons/si";
 
 interface HeroProps {
   name: string;
@@ -40,9 +41,11 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
             aria-label={social.name}
             className="hover:text-primary text-muted-foreground"
           >
-            {/* Replace with icon component logic */}
             <span className="sr-only">{social.name}</span>
-            <i className={`icon-${social.icon} w-6 h-6`}></i>
+            {social.name === "GitHub" && <SiGithub className="w-6 h-6" />}
+            {social.name === "LinkedIn" && <SiLinkedin className="w-6 h-6" />}
+            {social.name === "X" && <SiX className="w-6 h-6" />}
+            {social.name === "Instagram" && <SiInstagram className="w-6 h-6" />}
           </Link>
         ))}
       </div>

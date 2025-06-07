@@ -1,5 +1,6 @@
 import { socials } from "@/data/socials";
 import Link from "next/link";
+import { SiGithub, SiLinkedin, SiX, SiInstagram } from "react-icons/si";
 
 export default function Footer() {
   return (
@@ -16,7 +17,12 @@ export default function Footer() {
               aria-label={social.name}
               className="hover:text-primary text-muted-foreground"
             >
-              <i className={`icon-${social.icon} w-5 h-5`}></i>
+              {social.name === "GitHub" && <SiGithub className="w-5 h-5" />}
+              {social.name === "LinkedIn" && <SiLinkedin className="w-5 h-5" />}
+              {social.name === "X" && <SiX className="w-5 h-5" />}
+              {social.name === "Instagram" && (
+                <SiInstagram className="w-5 h-5" />
+              )}
             </Link>
           ))}
         </div>
