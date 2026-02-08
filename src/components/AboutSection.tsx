@@ -2,79 +2,89 @@
 
 import { about } from "@/data/about";
 import { motion } from "framer-motion";
-import SectionHeading from "./ui/SectionHeading";
-import { Sparkles, Code2, Users, Target } from "lucide-react";
-
-const icons = [Code2, Users, Target, Sparkles, Code2];
+import { Code2, Lightbulb, Rocket, Briefcase } from "lucide-react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.15,
       delayChildren: 0.2,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, x: -20 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
-export default function AboutSection() {
-  return (
-    <section id="about" className="py-20">
-      <SectionHeading title="About Me" />
+const icons = [Code2, Lightbulb, Rocket, Briefcase];
 
-      <div className="grid md:grid-cols-2 gap-8 items-start">
-        {/* Intro Card */}
+export default function AboutSection() {
+  const mainSections = [
+    "whatIDo",
+    "myApproach",
+    "craftAndGrowth",
+    "experience",
+  ];
+
+  return (
+    <section id="about" className="py-24 border-t border-border/50">
+      <div className="max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="card gradient-border p-8"
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
+          className="mb-12"
         >
-          <p className="text-lg leading-relaxed text-foreground">
+          <h2
+            className="text-3xl md:text-4xl font-bold mb-6"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            About <span className="text-primary">Me</span>
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
             {about.intro}
           </p>
         </motion.div>
 
-        {/* Details List */}
-        <motion.ul
+        {/* Sections Grid */}
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="space-y-4"
+          className="grid sm:grid-cols-2 gap-4"
         >
-          {about.details.map((detail, i) => {
+          {mainSections.map((key, i) => {
+            const section = about.sections[key as keyof typeof about.sections];
             const Icon = icons[i % icons.length];
             return (
-              <motion.li
-                key={i}
+              <motion.div
+                key={key}
                 variants={itemVariants}
-                className="flex items-start gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors group"
+                className="p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors group"
               >
-                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <Icon className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold">{section.title}</h3>
                 </div>
-                <p className="text-muted-foreground leading-relaxed pt-1.5">
-                  {detail}
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {section.content}
                 </p>
-              </motion.li>
+              </motion.div>
             );
           })}
-        </motion.ul>
+        </motion.div>
       </div>
     </section>
   );

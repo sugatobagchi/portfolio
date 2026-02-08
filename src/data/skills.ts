@@ -17,5 +17,4 @@ export const skills = {
     "Docker",
   ],
   databases: ["MySQL", "PostgreSQL", "Firestore", "MongoDB"],
-  softSkills: ["Public Speaking", "Leadership", "Event Management"],
 };

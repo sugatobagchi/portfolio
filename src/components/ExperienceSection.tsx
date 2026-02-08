@@ -50,7 +50,21 @@ export default function ExperienceSection() {
                       {exp.role}
                     </h3>
                     <p className="text-primary font-semibold flex items-center gap-2">
-                      <span>@ {exp.company}</span>
+                      <span>
+                        @{" "}
+                        {exp.url ? (
+                          <a
+                            href={exp.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            {exp.company}
+                          </a>
+                        ) : (
+                          exp.company
+                        )}
+                      </span>
                       {exp.location && (
                         <>
                           <span className="w-1 h-1 rounded-full bg-muted-foreground" />

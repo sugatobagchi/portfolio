@@ -1,11 +1,24 @@
 export const experience = [
   {
+    company: "Steora AI (steorasystems.com)",
+    url: "https://steorasystems.com/",
+    location: "Kolkata, India",
+    role: "Software Engineer",
+    period: "Oct 2025 - Present",
+    details: [
+      "Architected <strong>Transcript Finder</strong>: Built a high-performance, scalable search system handling <strong>1M+ transcription records</strong> across Canada with sub-200ms query response times.",
+      "Scaled for <strong>10,000+ concurrent users</strong>: Implemented distributed caching, connection pooling, and load balancing to achieve <strong>99.99% uptime</strong> under peak traffic.",
+      "AI Agent Integration: Building intelligent automation agents for workflow optimization, achieving <strong>40% reduction</strong> in manual processing time.",
+      "Recipient of <strong>2x Employee Appreciation Awards</strong> for exceptional performance and delivery.",
+    ],
+  },
+  {
     company: "Deepfleet Energy",
     location: "Bengaluru, India",
     role: "Software Engineer",
-    period: "Jan 2025 - Present",
+    period: "Jan 2025 - Sep 2025",
     details: [
-      "EV Charger Software Development: Developing core EV charger software using <strong>OCPP</strong> and <strong>OCPI</strong> protocols with a <strong>JavaScript</strong> tech stack.",
+      "EV Charger Software Development: Developed core EV charger software using <strong>OCPP</strong> and <strong>OCPI</strong> protocols with a <strong>JavaScript</strong> tech stack.",
       "OCPI Integration: Led the integration of OCPI multi-connectors, enabling seamless onboarding of approx <strong>1000+ chargers</strong> onto the platform.",
       "Performance Optimization: Optimized systems to improve stability, resulting in <strong>10% faster</strong> responses and <strong>12% reduced</strong> system load.",
     ],
