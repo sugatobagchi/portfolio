@@ -219,7 +219,7 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
             </motion.span>
             {lastName && (
               <motion.span
-                className="block text-gradient relative pb-2"
+                className="block text-primary relative pb-2"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
