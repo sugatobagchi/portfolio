@@ -28,10 +28,12 @@ export default function Icon() {
         style={{
           backgroundImage: "linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)",
           backgroundClip: "text",
-          "-webkit-background-clip": "text",
           color: "transparent",
           display: "flex",
           whiteSpace: "nowrap",
+          ...({
+            "-webkit-background-clip": "text",
+          } as any),
         }}
       >
         &lt;SB /&gt;
