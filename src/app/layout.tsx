@@ -19,14 +19,6 @@ export const metadata: Metadata = {
   title: "Sugato Bagchi | Software Engineer",
   description:
     "Software Engineer and Full-Stack Developer passionate about building exceptional digital experiences",
-  icons: {
-    icon: [
-      {
-        url: "/favicon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-  },
   openGraph: {
     title: "Sugato Bagchi | Software Engineer",
     description:

@@ -60,9 +60,16 @@ export default function Header({ navItems }: HeaderProps) {
               >
                 <Link
                   href={item.href}
-                  className="relative px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors animated-underline"
+                  className={`relative px-4 py-2 text-sm font-medium transition-colors ${
+                    item.href === "/top-100"
+                      ? "text-primary bg-primary/10 border border-primary/20 rounded-full hover:bg-primary/20 hover:border-primary/40"
+                      : "text-muted-foreground hover:text-foreground animated-underline"
+                  }`}
                 >
                   {item.label}
+                  {item.href === "/top-100" && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse" />
+                  )}
                 </Link>
               </motion.div>
             ))}
@@ -140,10 +147,17 @@ export default function Header({ navItems }: HeaderProps) {
                   >
                     <Link
                       href={item.href}
-                      className="block py-3 px-4 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                      className={`block py-3 px-4 rounded-lg transition-all ${
+                        item.href === "/top-100"
+                          ? "text-primary bg-primary/10 border border-primary/20 font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
+                      {item.href === "/top-100" && (
+                        <span className="inline-block ml-2 w-2 h-2 bg-accent rounded-full animate-pulse" />
+                      )}
                     </Link>
                   </motion.div>
                 ))}

@@ -188,13 +188,8 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
 
           {/* Animated name with 3D effect */}
           <motion.h1
-            style={{
-              rotateX,
-              rotateY,
-              transformPerspective: 1000,
-              fontFamily: "var(--font-heading)",
-            }}
-            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-4 md:mb-6"
+            className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 tracking-tight leading-tight"
+            style={{ fontFamily: "var(--font-heading)" }}
           >
             <motion.span
               className="block text-foreground relative"
@@ -203,7 +198,6 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
               transition={{ duration: 0.6, delay: 0.3 }}
               whileHover={{
                 x: 10,
-                textShadow: "4px 4px 0px rgba(59, 130, 246, 0.2)",
               }}
             >
               {firstName.split("").map((char, i) => (
@@ -225,7 +219,7 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
             </motion.span>
             {lastName && (
               <motion.span
-                className="block text-gradient relative pb-3"
+                className="block text-gradient relative pb-2"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
@@ -523,8 +517,8 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
               transition={{ duration: 3, repeat: Infinity }}
               className="absolute -bottom-4 -right-4"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+                <Zap className="w-5 h-5 text-primary-foreground" />
               </div>
             </motion.div>
           </motion.div>

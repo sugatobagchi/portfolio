@@ -83,9 +83,9 @@ function InteractiveParagraph({
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
       whileHover={{ x: 8 }}
-      className={`relative pl-4 sm:pl-6 border-l-2 transition-all cursor-default ${
+      className={`relative pl-3 sm:pl-6 border-l-2 transition-all cursor-default ${
         highlight
-          ? "border-primary bg-primary/5 py-4 pr-4 rounded-r-xl"
+          ? "border-primary bg-primary/5 py-3 sm:py-4 pr-3 sm:pr-4 rounded-r-xl"
           : "border-border/50 hover:border-primary"
       }`}
     >
@@ -122,7 +122,7 @@ export default function AboutPage() {
 
   return (
     <PageLayout>
-      <div className="min-h-screen py-16 md:py-24 px-4 sm:px-6">
+      <div className="min-h-screen py-16 md:py-24 px-3 sm:px-6">
         <div className="max-w-3xl mx-auto">
           {/* Hero Section with floating elements */}
           <motion.div
