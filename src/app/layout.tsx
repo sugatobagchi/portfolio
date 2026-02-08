@@ -1,13 +1,24 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Sugato Bagchi",
-  description: "Software Engineer and Web Developer",
+  title: "Sugato Bagchi | Software Engineer",
+  description:
+    "Software Engineer and Full-Stack Developer passionate about building exceptional digital experiences",
   icons: {
     icon: [
       {
@@ -15,6 +26,12 @@ export const metadata: Metadata = {
         type: "image/svg+xml",
       },
     ],
+  },
+  openGraph: {
+    title: "Sugato Bagchi | Software Engineer",
+    description:
+      "Software Engineer and Full-Stack Developer passionate about building exceptional digital experiences",
+    type: "website",
   },
 };
 
@@ -24,8 +41,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} ${outfit.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
         </ThemeProvider>

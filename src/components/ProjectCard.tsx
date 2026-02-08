@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { ExternalLink, ArrowRight } from "lucide-react";
 
 interface ProjectCardProps {
   title: string;
@@ -15,22 +19,44 @@ export default function ProjectCard({
   link,
 }: ProjectCardProps) {
   return (
-    <div className="card p-4 flex flex-col">
-      <div className="relative w-full h-40 mb-3 rounded overflow-hidden">
-        <Image src={image} alt={title} fill className="object-cover rounded" />
+    <motion.div whileHover={{ y: -8 }} className="group card overflow-hidden">
+      {/* Image */}
+      <div className="relative h-48 -mx-6 -mt-6 mb-4 overflow-hidden">
+        <Image
+          src={image}
+          alt={title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card/90 to-transparent" />
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <ExternalLink className="w-5 h-5 text-white" />
+          </div>
+        </div>
       </div>
-      <h3 className="text-lg font-bold mb-1 font-montserrat font-mono">
+
+      {/* Content */}
+      <h3
+        className="text-xl font-bold mb-2"
+        style={{ fontFamily: "var(--font-heading)" }}
+      >
         {title}
       </h3>
-      <p className="text-sm text-muted-foreground mb-2 flex-1 font-inter">
+      <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
         {description}
       </p>
+
+      {/* Link */}
       <Link
         href={link}
-        className="text-primary font-medium hover:underline mt-auto"
+        className="inline-flex items-center gap-2 text-primary font-medium group/link"
       >
-        Explore
+        <span>View Project</span>
+        <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
       </Link>
-    </div>
+    </motion.div>
   );
 }

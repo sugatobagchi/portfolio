@@ -14,6 +14,7 @@ import SocialsSection from "./SocialsSection";
 import Footer from "./Footer";
 import { useEffect, useState } from "react";
 import { features } from "@/config/features";
+import { motion } from "framer-motion";
 
 export default function Portfolio() {
   const { theme, setTheme } = useTheme();
@@ -26,7 +27,15 @@ export default function Portfolio() {
   const handleThemeToggle = () => setTheme(theme === "dark" ? "light" : "dark");
 
   if (!mounted) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"
+        />
+      </div>
+    );
   }
 
   // Filter enabled features for navbar
@@ -50,7 +59,7 @@ export default function Portfolio() {
         onThemeToggle={handleThemeToggle}
         theme={theme ?? "dark"}
       />
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-6">
         <Hero name={about.name} tagline={about.intro} avatarUrl={"/me.webp"} />
         {features
           .filter((feature) => feature.enabled)
