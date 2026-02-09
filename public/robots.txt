@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://sugatobagchi.com
+
+# Sitemaps
+Sitemap: https://sugatobagchi.com/sitemap.xml

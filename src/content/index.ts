@@ -14,12 +14,25 @@ export const siteContent = {
   profileImage: "/me.png",
   profileImageUrl: "https://sugatobagchi.com/me.png", // For OG images (needs absolute URL)
 
-  // SEO & Metadata
   seo: {
     title: "Sugato Bagchi | Software Engineer",
     description:
       "Full-Stack Developer passionate about building exceptional digital experiences",
-    keywords: ["software engineer", "full-stack developer", "web development"],
+    keywords: [
+      "Sugato Bagchi",
+      "Software Engineer",
+      "Full Stack Developer",
+      "Web Developer",
+      "React Developer",
+      "Frontend Developer",
+      "Backend Developer",
+      "TypeScript",
+      "JavaScript",
+      "Node.js",
+      "Next.js",
+      "Portfolio",
+      "Web Development",
+    ],
   },
 
   // Theme colors (for OG images, etc.)
