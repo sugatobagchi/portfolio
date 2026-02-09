@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Feature } from "@/config/features";
@@ -13,6 +14,7 @@ interface HeaderProps {
 }
 
 export default function Header({ navItems }: HeaderProps) {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
@@ -63,12 +65,17 @@ export default function Header({ navItems }: HeaderProps) {
                   className={`relative px-4 py-2 text-sm font-medium transition-colors ${
                     item.href === "/top-100"
                       ? "text-primary bg-primary/10 border border-primary/20 rounded-full hover:bg-primary/20 hover:border-primary/40"
-                      : "text-muted-foreground hover:text-foreground animated-underline"
+                      : pathname === item.href
+                        ? "text-foreground font-semibold"
+                        : "text-muted-foreground hover:text-foreground animated-underline"
                   }`}
                 >
                   {item.label}
                   {item.href === "/top-100" && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse" />
+                  )}
+                  {pathname === item.href && item.href !== "/top-100" && (
+                    <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-primary rounded-full" />
                   )}
                 </Link>
               </motion.div>
@@ -150,7 +157,9 @@ export default function Header({ navItems }: HeaderProps) {
                       className={`block py-3 px-4 rounded-lg transition-all ${
                         item.href === "/top-100"
                           ? "text-primary bg-primary/10 border border-primary/20 font-medium"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                          : pathname === item.href
+                            ? "text-foreground bg-muted/80 font-semibold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
