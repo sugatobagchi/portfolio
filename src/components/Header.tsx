@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { Feature } from "@/config/features";
 import { motion, AnimatePresence } from "framer-motion";
 import ContactModal from "./ContactModal";
+import { siteContent } from "@/content";
 
 interface HeaderProps {
   navItems: Feature[];
@@ -47,7 +48,7 @@ export default function Header({ navItems }: HeaderProps) {
               className="text-2xl font-bold text-gradient"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              {"<SB />"}
+              {siteContent.logo}
             </motion.span>
           </Link>
 
