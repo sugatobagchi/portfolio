@@ -5,7 +5,7 @@ module.exports = {
   changefreq: "weekly",
   priority: 0.7,
   sitemapSize: 7000,
-  exclude: ["/api/*"],
+  exclude: ["/api/*", "/mf-research"],
   robotsTxtOptions: {
     policies: [
       {
