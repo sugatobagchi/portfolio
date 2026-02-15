@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Metadata } from "next";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useTheme } from "next-themes";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sun, Moon, Home, Calculator } from "lucide-react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,7 +16,10 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
+import { fundDB, fundIds, years } from "./_components/fundData";
+import { CalculatorView } from "./_components/Calculator";
+import type { FundData } from "./_components/fundData";
 
 ChartJS.register(
   CategoryScale,
@@ -28,557 +33,877 @@ ChartJS.register(
   Filler,
 );
 
-// --- DATA ---
+type ViewId = "overview" | "calculator" | string;
 
-interface FundData {
-  id: string;
-  name: string;
-  category: string;
-  launchDate: string;
-  cagr20: string;
-  expense: string;
-  trustReason: string;
-  alphaStrategy: string;
-  managerLegacy: string;
-  resilience: string;
-  role: string;
-  color: string;
-  dataPoints: number[];
+// --- ANIMATED THEME TOGGLE ---
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted)
+    return <div className="w-14 h-7 rounded-full bg-secondary/50" />;
+
+  const isDark = theme === "dark";
+  return (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className={`relative w-14 h-7 rounded-full transition-colors duration-300 cursor-pointer ${isDark ? "bg-slate-700" : "bg-sky-200"}`}
+      aria-label="Toggle theme"
+    >
+      <AnimatePresence>
+        {isDark && (
+          <>
+            {[
+              { x: 22, y: 8, s: 1.5 },
+              { x: 28, y: 16, s: 1 },
+              { x: 18, y: 18, s: 2 },
+              { x: 34, y: 10, s: 1.2 },
+            ].map((star, i) => (
+              <motion.div
+                key={`star-${i}`}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ delay: i * 0.08, duration: 0.25 }}
+                className="absolute rounded-full bg-white"
+                style={{
+                  width: star.s,
+                  height: star.s,
+                  left: star.x,
+                  top: star.y,
+                }}
+              />
+            ))}
+          </>
+        )}
+      </AnimatePresence>
+      <motion.div
+        layout
+        className={`absolute top-[3px] w-[22px] h-[22px] rounded-full shadow-md flex items-center justify-center ${isDark ? "bg-slate-900" : "bg-yellow-400"}`}
+        animate={{ left: isDark ? 3 : 31 }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+      >
+        <AnimatePresence mode="wait">
+          {isDark ? (
+            <motion.div
+              key="moon"
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Moon className="w-3 h-3 text-yellow-300" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="sun"
+              initial={{ rotate: 90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Sun className="w-3 h-3 text-yellow-900" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </button>
+  );
 }
 
-const fundsData: FundData[] = [
-  {
-    id: "hdfc-flexi",
-    name: "HDFC Flexi Cap Fund",
-    category: "Flexi Cap",
-    launchDate: "Jan 1995",
-    cagr20: "18.5%",
-    expense: "0.88%",
-    trustReason:
-      "The 'Giant' of Indian Mutual Funds. Formerly HDFC Equity, it has a legendary history under Prashant Jain. It is known for its contrarian bets that pay off massively over long cycles. It survived 2008 better than most aggressive peer funds by sticking to valuation comfort.",
-    alphaStrategy:
-      "Maintains a value-biased portfolio. Does not chase momentum. Historically high allocation to corporate banks and utilities during unloved periods.",
-    managerLegacy:
-      "Managed by Roshi Jain (since 2022), carrying forward the 28-year legacy of Prashant Jain. High manager tenure stability historically.",
-    resilience: "High",
-    role: "Core Portfolio Builder",
-    color: "#1e3a8a",
-    dataPoints: [
-      10, 14, 12, 25, 45, 60, 40, 75, 90, 110, 105, 140, 160, 200, 240, 220,
-      280, 350, 420, 500, 580,
-    ],
-  },
-  {
-    id: "franklin-prima",
-    name: "Franklin India Prima",
-    category: "Mid Cap",
-    launchDate: "Dec 1993",
-    cagr20: "19.2%",
-    expense: "1.05%",
-    trustReason:
-      "The 'Pioneer' of Midcap investing. With over 30 years of history, it has seen every market cycle. It is renowned for its bottom-up stock picking and strict quality filters, which helped it navigate the 2018 midcap crash with relative resilience.",
-    alphaStrategy:
-      "Focuses on high-growth companies with clean balance sheets. Avoids leverage. Consistent alpha over Nifty Midcap 150 over 15-year rolling periods.",
-    managerLegacy:
-      "R. Janakiraman has been at the helm for over a decade, providing immense stability in style and execution.",
-    resilience: "Medium-High",
-    role: "Aggressive Growth",
-    color: "#059669",
-    dataPoints: [
-      10, 11, 15, 30, 65, 80, 45, 90, 110, 130, 120, 160, 200, 250, 290, 270,
-      350, 450, 500, 600, 700,
-    ],
-  },
-  {
-    id: "nippon-growth",
-    name: "Nippon India Growth",
-    category: "Mid Cap",
-    launchDate: "Oct 1995",
-    cagr20: "21.5%",
-    expense: "1.08%",
-    trustReason:
-      "A true 'Wealth Compounder'. Formerly Reliance Growth, it was the first fund to reach a NAV of ₹100, then ₹1000, then ₹2000. It captures the high-beta growth of the Indian economy specifically through emerging leaders.",
-    alphaStrategy:
-      "Growth at Reasonable Price (GARP). Willing to take cash calls or sector deviations. Massive alpha generator in bull runs (2003-2007, 2014-2017).",
-    managerLegacy:
-      "Manish Gunwani (recent) and legacy of heavyweights like Sunil Singhania. The fund process is institutionalized.",
-    resilience: "Medium",
-    role: "Alpha Generator",
-    color: "#db2777",
-    dataPoints: [
-      10, 12, 18, 40, 90, 100, 50, 110, 140, 170, 160, 210, 280, 340, 380, 360,
-      480, 600, 700, 850, 950,
-    ],
-  },
-  {
-    id: "hdfc-top100",
-    name: "HDFC Top 100 Fund",
-    category: "Large Cap",
-    launchDate: "Oct 1996",
-    cagr20: "17.8%",
-    expense: "0.95%",
-    trustReason:
-      "The 'Safe Anchor'. One of the oldest large-cap funds. It rarely deviates from the top 100 companies by market cap, ensuring high liquidity and lower volatility compared to mid-caps.",
-    alphaStrategy:
-      "Strictly adheres to Large Cap universe. Generates alpha through sector rotation (e.g., overweight on Energy/Utilities when they were undervalued).",
-    managerLegacy:
-      "Another flagship formerly managed by Prashant Jain, now Rahul Baijal. Consistency in philosophy is its hallmark.",
-    resilience: "Very High",
-    role: "Capital Protection",
-    color: "#475569",
-    dataPoints: [
-      10, 12, 11, 20, 35, 45, 35, 60, 75, 90, 95, 110, 125, 145, 165, 160, 200,
-      240, 280, 330, 380,
-    ],
-  },
-  {
-    id: "absl-mnc",
-    name: "ABSL MNC Fund",
-    category: "Thematic (Global)",
-    launchDate: "Dec 1999",
-    cagr20: "16.5%",
-    expense: "1.10%",
-    trustReason:
-      "The 'Global Proxy'. While not an International Fund by definition, it invests in Multinational Companies (MNCs) listed in India. This gives it the governance, technology, and stability of global parents (Unilever, Pfizer, etc.), acting as a perfect defensive hedge.",
-    alphaStrategy:
-      "Quality factor. MNCs typically have high ROE and zero debt. The fund outperforms during volatile markets due to the 'flight to safety' phenomenon.",
-    managerLegacy:
-      "Managed by Aditya Birla Sun Life's experienced desk. Very low churn portfolio.",
-    resilience: "Extreme",
-    role: "Defensive Hedge",
-    color: "#d97706",
-    dataPoints: [
-      10, 11, 12, 15, 20, 25, 22, 35, 45, 55, 65, 80, 95, 110, 130, 140, 160,
-      190, 220, 260, 300,
-    ],
-  },
+// --- NAV TABS ---
+
+const navTabs = [
+  { id: "overview", label: "Overview", icon: Home },
+  { id: "calculator", label: "Calculator", icon: Calculator },
 ];
 
-const drawdownData: Record<string, number[]> = {
-  "hdfc-flexi": [-45, -55, -28],
-  "franklin-prima": [-50, -60, -30],
-  "nippon-growth": [-55, -65, -32],
-  "hdfc-top100": [-35, -45, -24],
-  "absl-mnc": [-20, -35, -15],
-};
+function NavBar({
+  currentView,
+  onNavigate,
+}: {
+  currentView: ViewId;
+  onNavigate: (v: ViewId) => void;
+}) {
+  return (
+    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border">
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="flex items-center justify-between py-3">
+          <div>
+            <h1
+              className="text-xl font-bold text-foreground tracking-tighter"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              LEGACY <span className="text-primary">ALPHA</span>
+            </h1>
+            <p className="text-[10px] text-muted-foreground font-mono">
+              EST. 2000 • INDIA RESEARCH
+            </p>
+          </div>
+          <ThemeToggle />
+        </div>
 
-const years = Array.from({ length: 21 }, (_, i) => (2004 + i).toString());
+        <div className="flex items-center gap-1 pb-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {navTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentView === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onNavigate(tab.id)}
+                className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-underline"
+                    className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                  />
+                )}
+              </button>
+            );
+          })}
 
-// --- COMPONENT ---
+          <div className="w-px h-5 bg-border mx-1 shrink-0" />
 
-export default function MFResearchPage() {
-  const [chartMode, setChartMode] = useState<"growth" | "drawdown">("growth");
-  const [selectedFundId, setSelectedFundId] = useState("hdfc-flexi");
-
-  const selectedFund = useMemo(
-    () => fundsData.find((f) => f.id === selectedFundId) ?? fundsData[0],
-    [selectedFundId],
+          {fundIds.map((fid) => {
+            const f = fundDB[fid];
+            const isActive = currentView === fid;
+            return (
+              <button
+                key={fid}
+                onClick={() => onNavigate(fid)}
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border cursor-pointer ${isActive ? "border-primary/30 bg-primary/10 text-primary shadow-sm" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
+              >
+                <span>{f.emoji}</span>
+                <span className="hidden sm:inline">{f.shortName}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </header>
   );
+}
 
-  const insightText =
-    chartMode === "growth"
-      ? "HDFC Flexi Cap and Nippon India Growth highlight the massive power of compounding over 20+ years, despite volatility."
-      : "Notice how ABSL MNC (Orange) barely dipped in 2008 compared to the 65% fall of aggressive midcaps, proving its role as a hedge.";
+// --- CHARTS ---
 
-  const growthChartData = useMemo(
+function FundProfileChart({ fund }: { fund: FundData }) {
+  const data = useMemo(
     () => ({
       labels: years,
       datasets: [
-        ...fundsData.map((fund) => ({
-          label: fund.name,
-          data: fund.dataPoints,
-          borderColor: fund.color,
-          backgroundColor: fund.color,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          fill: false,
-          tension: 0.3,
-        })),
         {
-          label: "Nifty 50 Benchmark",
-          data: [
-            10, 11, 13, 20, 30, 35, 25, 45, 55, 60, 65, 75, 85, 95, 110, 105,
-            130, 150, 180, 220, 250,
-          ],
-          borderColor: "#94a3b8",
+          label: fund.name,
+          data: fund.chartData,
+          borderColor: fund.color,
+          backgroundColor: fund.color + "20",
           borderWidth: 2,
-          borderDash: [5, 5],
+          fill: true,
+          tension: 0.4,
           pointRadius: 0,
-          fill: false,
-          tension: 0,
+          pointHoverRadius: 6,
         },
       ],
     }),
+    [fund],
+  );
+  const opts = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index" as const, intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "rgba(15,23,42,0.9)",
+          titleColor: "#e2e8f0",
+          bodyColor: "#94a3b8",
+          borderColor: "rgba(148,163,184,0.2)",
+          borderWidth: 1,
+          padding: 10,
+          displayColors: true,
+          callbacks: {
+            label: (ctx: any) =>
+              `${ctx.dataset.label || ""}: ₹${ctx.parsed.y}k`,
+          },
+        },
+      },
+      scales: {
+        y: {
+          grid: { color: "rgba(148,163,184,0.1)" },
+          ticks: {
+            color: "#94a3b8",
+            callback: (v: number | string) => "₹" + v + "k",
+          },
+        },
+        x: { grid: { display: false }, ticks: { color: "#94a3b8" } },
+      },
+    }),
     [],
   );
+  return (
+    <div className="relative w-full h-[350px]">
+      <Line data={data} options={opts} />
+    </div>
+  );
+}
 
-  const drawdownChartData = useMemo(
+function ComparisonChart() {
+  const data = useMemo(
     () => ({
-      labels: ["2000 (Dot-com)", "2008 (GFC)", "2020 (Covid)"],
-      datasets: fundsData.map((fund) => ({
-        label: fund.name,
-        data: drawdownData[fund.id],
-        backgroundColor: fund.color,
-        barPercentage: 0.7,
-        categoryPercentage: 0.8,
+      labels: years,
+      datasets: Object.values(fundDB).map((f) => ({
+        label: f.name,
+        data: f.chartData,
+        borderColor: f.color,
+        backgroundColor: f.color,
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 0,
+        fill: false,
       })),
     }),
     [],
   );
-
-  const commonOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "bottom" as const,
-        labels: {
-          usePointStyle: true,
-          boxWidth: 8,
+  const opts = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index" as const, intersect: false },
+      plugins: {
+        legend: {
+          position: "top" as const,
+          labels: {
+            usePointStyle: true,
+            boxWidth: 8,
+            color: "#94a3b8",
+          },
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "rgba(15,23,42,0.9)",
+          titleColor: "#e2e8f0",
+          bodyColor: "#94a3b8",
+          borderColor: "rgba(148,163,184,0.2)",
+          borderWidth: 1,
+          padding: 10,
+          displayColors: true,
+          callbacks: {
+            label: (ctx: any) =>
+              `${ctx.dataset.label || ""}: ₹${ctx.parsed.y}k`,
+          },
         },
       },
-      tooltip: {
-        mode: "index" as const,
-        intersect: false,
-        backgroundColor: "rgba(15, 23, 42, 0.9)",
-        titleColor: "#f1f5f9",
-        bodyColor: "#cbd5e1",
-        borderColor: "#334155",
-        borderWidth: 1,
+      scales: {
+        y: {
+          grid: { color: "rgba(148,163,184,0.1)" },
+          ticks: { color: "#94a3b8" },
+        },
+        x: { grid: { display: false }, ticks: { color: "#94a3b8" } },
       },
-    },
-  };
+    }),
+    [],
+  );
+  return (
+    <div className="relative w-full h-[400px]">
+      <Line data={data} options={opts} />
+    </div>
+  );
+}
 
-  const growthOptions = {
-    ...commonOptions,
-    scales: {
-      y: {
-        title: { display: true, text: "Value of ₹10,000 (x1000)" },
-        grid: { color: "#f1f5f9" },
-      },
-      x: {
-        grid: { display: false },
-      },
-    },
-    interaction: {
-      mode: "nearest" as const,
-      axis: "x" as const,
-      intersect: false,
-    },
-  };
+// --- WIKI DATA ---
 
-  const drawdownOptions = {
-    ...commonOptions,
-    scales: {
-      y: {
-        title: { display: true, text: "Drawdown %" },
-        min: -70,
-        max: 0,
-        grid: { color: "#f1f5f9" },
-      },
-      x: {
-        grid: { display: false },
-      },
-    },
-  };
+const wikiTerms = [
+  {
+    term: "Mutual Fund",
+    emoji: "📦",
+    tldr: "A pool of money from many investors, managed by a professional.",
+    detail:
+      "Think of it like a potluck dinner: everyone brings some money, a professional chef (fund manager) decides what dishes to buy (stocks/bonds), and all the gains or losses are shared proportionally. You don't need to pick individual stocks — the manager does it for you.",
+  },
+  {
+    term: "NAV (Net Asset Value)",
+    emoji: "🏷️",
+    tldr: "The price of one unit of the fund — like the MRP of a share.",
+    detail:
+      "Every mutual fund is divided into 'units'. NAV tells you what one unit is worth today. If a fund's NAV is ₹150, and you invest ₹15,000, you get 100 units. When NAV rises to ₹180, your 100 units are now worth ₹18,000. Simple!",
+  },
+  {
+    term: "SIP (Systematic Investment Plan)",
+    emoji: "🔄",
+    tldr: "Auto-invest a fixed amount every month — like a subscription for wealth.",
+    detail:
+      "Instead of investing a big chunk at once, SIP lets you invest ₹500, ₹5,000, or any amount monthly. The magic? When markets fall, your fixed amount buys MORE units (cheaper). When markets rise, your units become valuable. Over time, this averages out the cost — it's called 'Rupee Cost Averaging'. You don't need to time the market.",
+  },
+  {
+    term: "Lump Sum",
+    emoji: "💰",
+    tldr: "Investing all your money at once.",
+    detail:
+      "Unlike SIP, you put in a big amount in one go. This works great if markets are low (you buy cheap), but risky if markets are at a peak (you buy expensive). A lump sum of ₹10 lakh in 2008 crash would have become ₹50+ lakh by 2024!",
+  },
+  {
+    term: "CAGR",
+    emoji: "📈",
+    tldr: "Your true annualized return — what the fund actually earned per year.",
+    detail:
+      "If ₹1 lakh became ₹6 lakh in 15 years, the CAGR is ~12.7%. It's the smoothed-out annual return, ignoring the ups and downs. CAGR is the fairest way to compare different investments over different time periods. Don't be fooled by 'total return' — always ask for CAGR.",
+  },
+  {
+    term: "Compounding",
+    emoji: "🌱",
+    tldr: "Earning returns on your returns — the 8th wonder of the world.",
+    detail:
+      "Year 1: You invest ₹1 lakh, earn 12% → ₹1.12 lakh. Year 2: You earn 12% on ₹1.12 lakh (not ₹1 lakh) → ₹1.25 lakh. The snowball grows faster every year. At 15% annual return:\n• 10 years: ₹1L → ₹4L\n• 20 years: ₹1L → ₹16L\n• 30 years: ₹1L → ₹66L\nTime is the magic ingredient. Start early.",
+  },
+  {
+    term: "AUM",
+    emoji: "🏦",
+    tldr: "Total money the fund manages — a trust indicator.",
+    detail:
+      "A fund with ₹50,000 Cr AUM means investors collectively trust it with ₹50,000 crore. Higher AUM generally means more investor confidence. However, extremely high AUM in a mid-cap fund can be a problem — it becomes hard to buy/sell smaller stocks without moving prices.",
+  },
+  {
+    term: "Expense Ratio",
+    emoji: "🧾",
+    tldr: "The annual fee the fund charges — deducted automatically from returns.",
+    detail:
+      "If a fund's expense ratio is 1%, and it earns 15% gross returns, you get ~14% net returns. The fee covers the manager's salary, operations, marketing. Lower is better — a 0.5% difference compounded over 20 years can mean lakhs in savings. Index funds charge 0.1-0.3%, active funds charge 0.8-1.5%.",
+  },
+  {
+    term: "Alpha",
+    emoji: "⭐",
+    tldr: "How much EXTRA return the fund generates over the market benchmark.",
+    detail:
+      "If Nifty (benchmark) returns 12% and the fund returns 15%, the alpha is +3%. Positive alpha = the manager is adding value. Negative alpha = you're better off with a simple index fund. Consistent alpha over 10+ years is very rare and valuable — it's what separates great funds from average ones.",
+  },
+  {
+    term: "Beta",
+    emoji: "⚖️",
+    tldr: "How much the fund moves compared to the market.",
+    detail:
+      "Beta = 1 → moves exactly with market. Beta = 1.2 → 20% more volatile (market falls 10%, fund falls 12%). Beta = 0.8 → 20% less volatile (safer). High-beta funds are exciting in bull markets but painful in crashes. Think of beta as the fund's 'sensitivity dial'. Conservative investors prefer beta < 1.",
+  },
+  {
+    term: "Risk Profile",
+    emoji: "🎯",
+    tldr: "How bumpy the ride will be — from smooth highway to mountain road.",
+    detail:
+      "• Low Risk: Like a fixed deposit with slightly better returns. Barely any drops.\n• Moderate: Some ups and downs, but recovers within months.\n• High: Can drop 30-40% in crashes but historically delivers the highest long-term returns.\n• Very High: Roller-coaster. Can drop 50%+ but also deliver 20%+ CAGR over 20 years.\nMatch your risk tolerance to your timeline. 20+ year horizon? You can handle high risk.",
+  },
+  {
+    term: "Drawdown",
+    emoji: "📉",
+    tldr: "The fall from the peak — how much you'd temporarily lose in a crash.",
+    detail:
+      "If a fund's NAV went from ₹100 → ₹60, the drawdown is -40%. Every fund experiences drawdowns. What matters is: (1) How deep was the fall? (2) How fast did it recover? A fund that fell 40% in 2008 but recovered by 2010 is very different from one that took 5 years to recover.",
+  },
+  {
+    term: "Diversification",
+    emoji: "🥗",
+    tldr: "Don't put all eggs in one basket — spread across different assets.",
+    detail:
+      "If you invest only in one stock and it crashes, you lose everything. But if you invest in 50 stocks across different sectors, a crash in one barely hurts. That's diversification. Mutual funds do this automatically — a single fund typically holds 40-60 stocks across banking, IT, pharma, consumer goods, etc.",
+  },
+  {
+    term: "Benchmark Index",
+    emoji: "📊",
+    tldr: "The yardstick to measure if your fund is doing well or poorly.",
+    detail:
+      "Nifty 50 (top 50 Indian stocks) is the most common benchmark. If Nifty returned 12% and your fund returned 10%, your fund underperformed. If your fund returned 15%, it outperformed. Always compare your fund's returns against its benchmark — absolute returns alone don't tell the full story.",
+  },
+  {
+    term: "Lock-in & Exit Load",
+    emoji: "🔒",
+    tldr: "Time restrictions and charges for withdrawing your money.",
+    detail:
+      "• ELSS funds have a 3-year lock-in (tax saving).\n• Most equity funds charge 1% exit load if withdrawn within 1 year.\n• After 1 year, withdrawals are usually free.\nPlan accordingly — equity investments work best with 5+ year horizons. Short-term = high risk + penalties.",
+  },
+  {
+    term: "Rupee Cost Averaging",
+    emoji: "⚡",
+    tldr: "SIP's secret weapon — automatically buy more when prices drop.",
+    detail:
+      "Month 1: NAV ₹100, SIP ₹5000 → 50 units. Month 2: NAV ₹80 (crash!), SIP ₹5000 → 62.5 units. Month 3: NAV ₹120, SIP ₹5000 → 41.7 units. Total: ₹15,000 invested → 154.2 units. Average cost: ~₹97/unit. Your average buying price is lower than the average NAV! This is the power of SIP — crashes become opportunities.",
+  },
+];
 
-  const resilienceBadgeClass = (resilience: string) => {
-    if (resilience === "Extreme" || resilience === "Very High")
-      return "bg-green-100 text-green-800";
-    if (resilience === "High") return "bg-blue-100 text-blue-800";
-    return "bg-amber-100 text-amber-800";
-  };
+// --- WIKI SECTION (inline, for use in overview/fund pages) ---
+
+function WikiSection() {
+  const [expandedTerm, setExpandedTerm] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 antialiased selection:bg-blue-100 selection:text-blue-900">
-      {/* Header / Hero */}
-      <header className="bg-slate-900 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-amber-400 mb-2">
-                Legacy Wealth Builders
-              </h1>
-              <p className="text-slate-300 text-sm md:text-base max-w-2xl">
-                Research Report: Identifying Indian Mutual Funds with a 20+ year
-                active track record of alpha generation, crisis resilience, and
-                stable management.
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0 flex flex-col items-end">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Analysis Period
-              </span>
-              <span className="text-lg font-mono font-bold text-white">
-                2000 – 2025
-              </span>
-            </div>
-          </div>
+    <div className="space-y-4">
+      <div>
+        <h3
+          className="text-2xl font-bold text-foreground"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          📚 Investment Dictionary
+        </h3>
+        <p className="text-muted-foreground text-sm mt-1">
+          Tap any term to learn what it means — explained simply.
+        </p>
+      </div>
 
-          {/* Criteria Tags */}
-          <div className="flex flex-wrap gap-2 mt-6">
-            {[
-              "Active > 20 Yrs",
-              "Benchmark Beaters",
-              "Crash Tested",
-              "High Sentiment",
-            ].map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-xs text-slate-300"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-12">
-        {/* Section 1: Introduction */}
-        <section className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">
-            The &ldquo;Titans of Time&rdquo; Filter
-          </h2>
-          <p className="text-slate-600 leading-relaxed mb-8">
-            Out of hundreds of schemes, only a handful have survived and thrived
-            through the Dot-com bubble (2000), the Global Financial Crisis
-            (2008), and the Covid-19 crash (2020). This dashboard analyzes 5
-            funds that meet the rigorous criteria of consistent alpha generation
-            and legacy management.
-          </p>
-        </section>
-
-        {/* Section 2: Performance Analytics */}
-        <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
-            <div>
-              <h3 className="text-lg font-bold text-slate-800">
-                Performance Analytics
-              </h3>
-              <p className="text-xs text-slate-500">
-                Compare Wealth Creation &amp; Crisis Resilience
-              </p>
-            </div>
-            <div className="flex space-x-4">
-              <button
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  chartMode === "growth"
-                    ? "border-b-3 border-blue-900 text-blue-900 font-bold"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-                onClick={() => setChartMode("growth")}
-              >
-                Growth of ₹1 Lakh
-              </button>
-              <button
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  chartMode === "drawdown"
-                    ? "border-b-3 border-blue-900 text-blue-900 font-bold"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-                onClick={() => setChartMode("drawdown")}
-              >
-                Crisis Resilience
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <div className="relative w-full max-w-[800px] h-[400px] max-h-[500px] mx-auto md:h-[400px] max-md:h-[300px]">
-              {chartMode === "growth" ? (
-                <Line data={growthChartData} options={growthOptions} />
-              ) : (
-                <Bar data={drawdownChartData} options={drawdownOptions} />
-              )}
-            </div>
-            <div className="mt-6 bg-amber-50 border-l-4 border-amber-400 p-4 rounded text-sm text-slate-700">
-              <p className="font-medium">
-                <strong>Insight:</strong> {insightText}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Fund Deep Dive */}
-        <section>
-          <div className="flex flex-col md:flex-row justify-between items-end mb-6">
-            <div className="max-w-2xl">
-              <h2 className="text-2xl font-bold text-slate-900">
-                Fund Selector
-              </h2>
-              <p className="text-slate-600 mt-2">
-                Click on a fund card below to reveal its specific &ldquo;Trusted
-                Choice&rdquo; rationale, alpha statistics, and legacy details.
-              </p>
-            </div>
-          </div>
-
-          {/* Fund Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            {fundsData.map((fund) => (
-              <div
-                key={fund.id}
-                className={`cursor-pointer bg-white p-4 rounded-lg border transition-all group hover:shadow-md hover:border-blue-300 ${
-                  selectedFundId === fund.id
-                    ? "ring-2 ring-blue-500 bg-blue-50 border-blue-300"
-                    : "border-slate-200"
-                }`}
-                onClick={() => setSelectedFundId(fund.id)}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                    {fund.category}
-                  </span>
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: fund.color }}
-                  />
-                </div>
-                <h4 className="font-bold text-slate-800 text-sm leading-tight group-hover:text-blue-700">
-                  {fund.name}
-                </h4>
-                <div className="mt-3 flex justify-between items-end">
-                  <div>
-                    <p className="text-[10px] text-slate-400 uppercase">
-                      20Yr CAGR
-                    </p>
-                    <p className="font-bold text-emerald-600">{fund.cagr20}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {wikiTerms.map((item) => {
+          const isOpen = expandedTerm === item.term;
+          return (
+            <motion.div
+              key={item.term}
+              layout
+              className={`rounded-xl border bg-card overflow-hidden cursor-pointer transition-colors ${isOpen ? "border-primary/30 col-span-1 md:col-span-2" : "border-border hover:border-primary/20"}`}
+              onClick={() => setExpandedTerm(isOpen ? null : item.term)}
+            >
+              <div className="p-3 flex items-start gap-3">
+                <span className="text-xl shrink-0">{item.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="font-bold text-foreground text-sm">
+                      {item.term}
+                    </h4>
+                    <motion.span
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      className="text-muted-foreground text-xs shrink-0"
+                    >
+                      ▼
+                    </motion.span>
                   </div>
-                  <span className="text-xs text-slate-400">View &rarr;</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Detail View */}
-          <div className="bg-white rounded-xl shadow-lg border-t-4 border-blue-900 p-6 md:p-8 transition-all duration-300">
-            <div className="flex flex-col md:flex-row gap-8">
-              {/* Left Column */}
-              <div className="md:w-1/3 md:border-r border-slate-100 pr-0 md:pr-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-1">
-                  {selectedFund.name}
-                </h3>
-                <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold mb-6">
-                  {selectedFund.category}
-                </span>
-
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wide">
-                      20-Year CAGR
-                    </p>
-                    <p className="text-3xl font-bold text-emerald-600">
-                      {selectedFund.cagr20}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wide">
-                      Expense Ratio (Direct)
-                    </p>
-                    <p className="text-lg font-semibold text-slate-700">
-                      {selectedFund.expense}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wide">
-                      Launch Date
-                    </p>
-                    <p className="text-sm font-medium text-slate-600">
-                      Since {selectedFund.launchDate}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div className="md:w-2/3">
-                <div className="mb-6">
-                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center">
-                    <span className="w-2 h-2 bg-amber-400 rounded-full mr-2" />{" "}
-                    Why it is a &lsquo;Trusted&rsquo; Choice
-                  </h4>
-                  <p className="text-slate-600 leading-relaxed">
-                    {selectedFund.trustReason}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {item.tldr}
                   </p>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-slate-50 p-4 rounded-lg">
-                    <h5 className="font-bold text-slate-800 text-sm mb-2">
-                      Alpha Strategy
-                    </h5>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      {selectedFund.alphaStrategy}
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 p-4 rounded-lg">
-                    <h5 className="font-bold text-slate-800 text-sm mb-2">
-                      Manager Legacy
-                    </h5>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      {selectedFund.managerLegacy}
-                    </p>
-                  </div>
-                </div>
               </div>
-            </div>
-          </div>
-        </section>
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-3 pb-3 pt-0 ml-9">
+                      <div className="p-3 rounded-lg bg-secondary/30 border border-border">
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
+                          {item.detail}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-        {/* Section 4: Summary Table */}
-        <section className="mt-12 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200">
-            <h3 className="font-bold text-slate-800">
-              At a Glance: The 20-Year Club
+// --- OVERVIEW (merged Market Thesis + Analytics + Wiki) ---
+
+function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
+  return (
+    <div className="space-y-10 animate-[fadeIn_0.3s_ease-in-out]">
+      {/* Hero Thesis */}
+      <div className="border-b border-border pb-6">
+        <h2
+          className="text-3xl font-bold text-foreground"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          Investment Thesis: The 20-Year Filter
+        </h2>
+        <p className="text-muted-foreground mt-2 text-lg max-w-4xl">
+          Identifying &ldquo;Legacy Wealth Builders&rdquo; requires looking
+          beyond the last bull run. Only funds that have navigated the{" "}
+          <span className="font-bold text-red-400">2000 Dot-com bust</span>, the{" "}
+          <span className="font-bold text-red-400">2008 GFC</span>, and the{" "}
+          <span className="font-bold text-red-400">2020 Pandemic</span> prove
+          the resilience required for generational wealth creation.
+        </p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          {
+            title: "Universe Filtered",
+            value: "5",
+            sub: "/ 400+ Schemes",
+            desc: "Only 5 funds met the strict criteria of >20yr track record + consistent benchmark alpha.",
+            borderColor: "border-l-primary",
+            valueColor: "text-foreground",
+          },
+          {
+            title: "Avg 20Y Alpha",
+            value: "+2.8%",
+            sub: "CAGR over Nifty",
+            desc: "Consistent outperformance generated purely through stock selection, not luck.",
+            borderColor: "border-l-emerald-500",
+            valueColor: "text-emerald-400",
+          },
+          {
+            title: "Resilience Score",
+            value: "High",
+            sub: "Recovery Rate",
+            desc: "All selected funds recovered to pre-crash highs within 18-24 months of major crashes.",
+            borderColor: "border-l-violet-500",
+            valueColor: "text-violet-400",
+          },
+        ].map((m) => (
+          <div
+            key={m.title}
+            className={`rounded-xl border border-border bg-card p-6 border-l-4 ${m.borderColor}`}
+          >
+            <h3 className="text-sm uppercase font-bold text-muted-foreground mb-2">
+              {m.title}
             </h3>
+            <div className="flex items-baseline">
+              <span className={`text-4xl font-mono font-bold ${m.valueColor}`}>
+                {m.value}
+              </span>
+              <span className="text-sm text-muted-foreground ml-2">
+                {m.sub}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{m.desc}</p>
           </div>
+        ))}
+      </div>
+
+      {/* Why these categories + Methodology */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3
+            className="text-xl font-bold text-foreground mb-4"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Why these categories?
+          </h3>
+          <ul className="space-y-4">
+            {[
+              {
+                emoji: "🛡️",
+                title: "Large Cap & Flexi Cap",
+                desc: "The core engine. Funds like HDFC Top 100 provide stability, while Flexi Caps allow managers to navigate sectors freely.",
+              },
+              {
+                emoji: "🚀",
+                title: "Mid Cap Alpha",
+                desc: "Where the real wealth is made. Nippon Growth and Franklin Prima have turned small investments into fortunes over decades.",
+              },
+              {
+                emoji: "🌍",
+                title: "International Proxy (MNC)",
+                desc: "True international funds lack 20-year history in India. ABSL MNC invests in global parentage companies for currency/governance diversification.",
+              },
+            ].map((item) => (
+              <li key={item.title} className="flex items-start">
+                <span className="text-xl mr-3">{item.emoji}</span>
+                <div>
+                  <h4 className="font-bold text-foreground">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-6">
+          <h3
+            className="text-lg font-bold text-primary mb-4"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Research Methodology
+          </h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Over 20 years of NAV data has been analyzed to filter this specific
+            selection from 400+ mutual fund schemes. The criteria includes
+            consistent alpha generation over benchmark, crisis recovery speed,
+            style discipline through market cycles, and portfolio transparency.
+            Use the Return Calculator to simulate historical outcomes for any
+            fund over custom tenures.
+          </p>
+        </div>
+      </div>
+
+      {/* Comparative Analytics */}
+      <div className="space-y-6">
+        <h3
+          className="text-2xl font-bold text-foreground"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          Comparative Analytics
+        </h3>
+        <div
+          className="rounded-xl border border-border bg-card p-6"
+          style={{ minHeight: "400px" }}
+        >
+          <ComparisonChart />
+        </div>
+
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-slate-600">
-              <thead className="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+            <table className="w-full text-sm text-left text-muted-foreground">
+              <thead className="text-xs uppercase bg-secondary/50 border-b border-border">
                 <tr>
-                  <th className="px-6 py-3">Fund Name</th>
-                  <th className="px-6 py-3">Category</th>
-                  <th className="px-6 py-3">Resilience Rating</th>
-                  <th className="px-6 py-3">Primary Role</th>
+                  <th className="px-6 py-4 text-foreground">Fund</th>
+                  <th className="px-6 py-4 text-foreground">20Y CAGR</th>
+                  <th className="px-6 py-4 text-foreground">Beta</th>
+                  <th className="px-6 py-4 text-foreground">Expense</th>
+                  <th className="px-6 py-4 text-foreground">Risk</th>
                 </tr>
               </thead>
               <tbody>
-                {fundsData.map((fund) => (
+                {Object.values(fundDB).map((f) => (
                   <tr
-                    key={fund.id}
-                    className="bg-white border-b hover:bg-slate-50"
+                    key={f.id}
+                    onClick={() => onNavigate(f.id)}
+                    className="border-b border-border hover:bg-secondary/30 transition-colors cursor-pointer"
                   >
-                    <td className="px-6 py-4 font-medium text-slate-900">
-                      {fund.name}
+                    <td
+                      className="px-6 py-4 font-bold"
+                      style={{ color: f.color }}
+                    >
+                      <span className="mr-2">{f.emoji}</span>
+                      <span className="hover:underline">{f.name}</span>
                     </td>
-                    <td className="px-6 py-4">{fund.category}</td>
+                    <td className="px-6 py-4 font-mono text-foreground font-bold">
+                      {f.cagr20}
+                    </td>
+                    <td className="px-6 py-4 font-mono">{f.beta}</td>
+                    <td className="px-6 py-4 font-mono">{f.expense}</td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-2 py-1 text-xs rounded-full ${resilienceBadgeClass(fund.resilience)}`}
+                        className={`px-2 py-1 text-xs rounded border ${f.risk.includes("High") ? "bg-red-500/10 text-red-400 border-red-500/20" : f.risk.includes("Low") ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}
                       >
-                        {fund.resilience}
+                        {f.risk}
                       </span>
                     </td>
-                    <td className="px-6 py-4">{fund.role}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* Footer */}
-        <footer className="text-center text-slate-400 text-xs py-8 mt-8 border-t border-slate-200">
-          <p>
-            Data simulated based on historical trends of specified funds. Past
-            performance is not an indicator of future returns.
+      {/* Wiki — inline at bottom of overview */}
+      <div className="border-t border-border pt-8">
+        <WikiSection />
+      </div>
+    </div>
+  );
+}
+
+// --- FUND PROFILE VIEW ---
+
+function FundProfileView({ fund }: { fund: FundData }) {
+  const riskBadge = (risk: string) =>
+    risk.includes("High") || risk.includes("Very")
+      ? "bg-red-500/10 text-red-400 border-red-500/20"
+      : risk.includes("Low")
+        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+        : "bg-blue-500/10 text-blue-400 border-blue-500/20";
+
+  return (
+    <div className="flex flex-col space-y-6 animate-[fadeIn_0.3s_ease-in-out]">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-border pb-4">
+        <div>
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">{fund.emoji}</span>
+            <h2
+              className="text-3xl font-bold text-foreground"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              {fund.name}
+            </h2>
+            <span className="px-2 py-1 text-xs rounded font-bold bg-secondary text-secondary-foreground">
+              {fund.category}
+            </span>
+          </div>
+          <p className="text-lg text-muted-foreground font-medium">
+            {fund.tagline}
           </p>
-          <p>Source Report Analysis generated by AI Researcher.</p>
-        </footer>
+        </div>
+        <div className="mt-4 md:mt-0 text-right">
+          <p className="text-3xl font-mono font-bold text-emerald-400">
+            {fund.cagr20}
+          </p>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            20-Year CAGR
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-6">
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="text-xs font-bold uppercase text-muted-foreground mb-4">
+              Fund Fundamentals
+            </h3>
+            <div className="space-y-3">
+              {[
+                { l: "Launch Date", v: fund.launch },
+                { l: "AUM", v: fund.aum },
+                { l: "Expense Ratio", v: fund.expense },
+              ].map((i) => (
+                <div key={i.l} className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">{i.l}</span>
+                  <span className="text-sm font-bold text-foreground">
+                    {i.v}
+                  </span>
+                </div>
+              ))}
+              <div className="h-px bg-border my-2" />
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Alpha (vs BM)
+                </span>
+                <span className="text-sm font-bold text-emerald-400">
+                  {fund.alpha}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Beta</span>
+                <span className="text-sm font-bold text-foreground">
+                  {fund.beta}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Risk Profile
+                </span>
+                <span
+                  className={`text-xs font-bold px-2 py-0.5 rounded border ${riskBadge(fund.risk)}`}
+                >
+                  {fund.risk}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5 border-l-4 border-l-primary">
+            <h3 className="text-xs font-bold uppercase text-primary mb-2">
+              Why It&apos;s Trusted
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {fund.whyTrusted}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="text-xs font-bold uppercase text-muted-foreground mb-2">
+              Management Legacy
+            </h3>
+            <p className="text-sm font-bold text-foreground mb-1">
+              {fund.manager}
+            </p>
+            <p className="text-xs text-muted-foreground">{fund.desc}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="text-xs font-bold uppercase text-muted-foreground mb-3">
+              Top Holdings
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {fund.holdings.map((h) => (
+                <span
+                  key={h}
+                  className="px-2 py-1 text-xs rounded-full bg-secondary text-secondary-foreground"
+                >
+                  {h}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="lg:col-span-2 space-y-6">
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-foreground">
+                Growth of ₹10,000 (Simulated)
+              </h3>
+              <span className="text-xs text-muted-foreground">2004 – 2024</span>
+            </div>
+            <FundProfileChart fund={fund} />
+          </div>
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h3 className="font-bold text-foreground mb-4">
+              Crisis Resilience Matrix
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { l: "2000 Dot-com", v: fund.resilience.t2000 },
+                { l: "2008 GFC", v: fund.resilience.t2008 },
+                { l: "2020 Covid", v: fund.resilience.t2020 },
+              ].map((c) => (
+                <div
+                  key={c.l}
+                  className="text-center p-3 bg-red-500/5 rounded-lg border border-red-500/10"
+                >
+                  <p className="text-xs text-muted-foreground mb-1">{c.l}</p>
+                  <p className="text-lg font-bold text-red-400">{c.v}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              Peak-to-trough drawdown during the crisis period.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- MAIN PAGE ---
+
+export default function MFResearchPage() {
+  const [currentView, setCurrentView] = useState<ViewId>("overview");
+
+  const handleNav = useCallback((viewId: ViewId) => {
+    setCurrentView(viewId);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const renderView = () => {
+    if (currentView === "overview")
+      return <OverviewView onNavigate={handleNav} />;
+    if (currentView === "calculator") return <CalculatorView />;
+    const fund = fundDB[currentView];
+    if (fund) return <FundProfileView fund={fund} />;
+    return <OverviewView onNavigate={handleNav} />;
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <NavBar currentView={currentView} onNavigate={handleNav} />
+      <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        {renderView()}
       </main>
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
