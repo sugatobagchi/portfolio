@@ -9,7 +9,6 @@ import Footer from "./Footer";
 import FloatingThemeToggle from "./FloatingThemeToggle";
 import { useEffect, useState } from "react";
 import { features } from "@/config/features";
-import { motion } from "framer-motion";
 
 export default function Portfolio() {
   const { theme, setTheme } = useTheme();
@@ -21,18 +20,6 @@ export default function Portfolio() {
 
   const handleThemeToggle = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"
-        />
-      </div>
-    );
-  }
-
   const navItems = features.filter((feature) => feature.enabled);
 
   return (
@@ -43,10 +30,12 @@ export default function Portfolio() {
         <LandingIntro />
       </main>
       <Footer />
-      <FloatingThemeToggle
-        theme={theme ?? "dark"}
-        onToggle={handleThemeToggle}
-      />
+      {mounted && (
+        <FloatingThemeToggle
+          theme={theme ?? "dark"}
+          onToggle={handleThemeToggle}
+        />
+      )}
     </div>
   );
 }

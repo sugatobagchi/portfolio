@@ -268,9 +268,9 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
           </motion.div>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.4 }}
             className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-6 md:mb-8"
           >
             {tagline}
@@ -408,6 +408,7 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
                 src={avatarUrl}
                 alt={name}
                 fill
+                sizes="(max-width: 640px) 192px, (max-width: 768px) 256px, (max-width: 1024px) 320px, 384px"
                 className={`object-contain object-bottom drop-shadow-2xl transition-all duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                 priority
                 onLoad={() => setImageLoaded(true)}

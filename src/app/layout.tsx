@@ -96,6 +96,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <GoogleTagManager gtmId="GTM-P93PHQ65" />
       <head>
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
         <StructuredData />
       </head>
       <body className={`${inter.variable} ${outfit.variable} font-sans`}>

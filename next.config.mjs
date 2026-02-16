@@ -4,6 +4,11 @@ const base_url = process.env.NEXT_PUBLIC_MEET_URL;
 const resume_url = process.env.NEXT_PUBLIC_RESUME_URL;
 
 const nextConfig = {
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 768, 1024, 1280],
+    imageSizes: [128, 192, 256, 384],
+  },
   redirects: async () => {
     const redirectsArray = [];
 
