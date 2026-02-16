@@ -11,9 +11,11 @@ import {
   ChevronDown,
   ChevronRight,
   Wallet,
+  ShieldCheck,
 } from "lucide-react";
 import { Line } from "react-chartjs-2";
 import { fundDB, fundIds } from "./fundData";
+import { Term } from "./Term";
 
 function formatCurrency(n: number) {
   if (n >= 10000000) return "₹" + (n / 10000000).toFixed(2) + " Cr";
@@ -75,6 +77,16 @@ function interpolateMonthlyNav(yearlyData: number[]): number[] {
   return monthly;
 }
 
+/** Deflate a nominal value to today's purchasing power */
+function deflate(
+  nominal: number,
+  years: number,
+  inflationRate: number,
+): number {
+  if (inflationRate <= 0 || years <= 0) return nominal;
+  return nominal / Math.pow(1 + inflationRate / 100, years);
+}
+
 export function CalculatorView() {
   const [selectedFundId, setSelectedFundId] = useState("hdfc-flexi");
   const [mode, setMode] = useState<"lumpsum" | "sip">("sip");
@@ -87,6 +99,8 @@ export function CalculatorView() {
   const [skipFrom, setSkipFrom] = useState(3);
   const [skipTo, setSkipTo] = useState(5);
   const [skipUnit, setSkipUnit] = useState<"years" | "months">("years");
+  const [inflationEnabled, setInflationEnabled] = useState(false);
+  const [inflationRate, setInflationRate] = useState(6);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [expandedWindow, setExpandedWindow] = useState<number | null>(null);
   const [breakdownView, setBreakdownView] = useState<"monthly" | "yearly">(
@@ -396,7 +410,8 @@ export function CalculatorView() {
           Return Calculator
         </h2>
         <p className="text-muted-foreground mt-1">
-          Simulate historical returns with SIP or lump sum investments.
+          Simulate historical returns with <Term t="SIP" /> or{" "}
+          <Term t="Lump Sum">lump sum</Term> investments.
         </p>
       </div>
 
@@ -522,138 +537,202 @@ export function CalculatorView() {
         </div>
       </div>
 
-      {/* SIP Advanced Options with Toggles */}
-      {mode === "sip" && (
-        <div className="rounded-xl border border-border bg-card/50 p-5 space-y-5">
-          {/* Stop SIP After */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <ToggleSwitch
-                enabled={stopEnabled}
-                onChange={setStopEnabled}
-                label="Stop SIP After"
-              />
+      {/* Advanced Options */}
+      <div className="rounded-xl border border-border bg-card/50 p-5 space-y-5">
+        {/* SIP-only options */}
+        {mode === "sip" && (
+          <>
+            {/* Stop SIP After */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <ToggleSwitch
+                  enabled={stopEnabled}
+                  onChange={setStopEnabled}
+                  label="Stop SIP After"
+                />
+              </div>
+              <AnimatePresence>
+                {stopEnabled && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs text-muted-foreground">
+                        Stop after
+                      </span>
+                      <input
+                        type="number"
+                        value={stopValue}
+                        min={1}
+                        max={stopUnit === "years" ? tenure : tenure * 12}
+                        onChange={(e) =>
+                          setStopValue(Math.max(1, Number(e.target.value)))
+                        }
+                        className="w-20 px-3 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
+                        {(["years", "months"] as const).map((u) => (
+                          <button
+                            key={u}
+                            onClick={() => {
+                              if (u === stopUnit) return;
+                              if (u === "months")
+                                setStopValue(
+                                  Math.min(stopValue * 12, tenure * 12),
+                                );
+                              else
+                                setStopValue(
+                                  Math.max(1, Math.round(stopValue / 12)),
+                                );
+                              setStopUnit(u);
+                            }}
+                            className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${stopUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          >
+                            {u}
+                          </button>
+                        ))}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        — then let it grow
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <AnimatePresence>
-              {stopEnabled && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
+
+            {/* Divider */}
+            <div className="h-px bg-border" />
+
+            {/* Skip Payments */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <ToggleSwitch
+                  enabled={skipEnabled}
+                  onChange={setSkipEnabled}
+                  label="Skip Payments"
+                />
+              </div>
+              <AnimatePresence>
+                {skipEnabled && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs text-muted-foreground">
+                        Skip from
+                      </span>
+                      <input
+                        type="number"
+                        value={skipFrom}
+                        min={1}
+                        max={skipUnit === "years" ? tenure : tenure * 12}
+                        onChange={(e) => {
+                          const v = Math.max(1, Number(e.target.value));
+                          setSkipFrom(v);
+                          if (v > skipTo) setSkipTo(v);
+                        }}
+                        className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <span className="text-xs text-muted-foreground">to</span>
+                      <input
+                        type="number"
+                        value={skipTo}
+                        min={skipFrom}
+                        max={skipUnit === "years" ? tenure : tenure * 12}
+                        onChange={(e) =>
+                          setSkipTo(Math.max(skipFrom, Number(e.target.value)))
+                        }
+                        className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
+                        {(["years", "months"] as const).map((u) => (
+                          <button
+                            key={u}
+                            onClick={() => setSkipUnit(u)}
+                            className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${skipUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          >
+                            {u}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-border" />
+          </>
+        )}
+
+        {/* Inflation Adjustment — available for both SIP and Lump Sum */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <ToggleSwitch
+              enabled={inflationEnabled}
+              onChange={setInflationEnabled}
+              label="Adjust for Inflation"
+            />
+          </div>
+          <AnimatePresence>
+            {inflationEnabled && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-3">
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className="text-xs text-muted-foreground">
-                      Stop after
+                      Avg. Inflation Rate
                     </span>
-                    <input
-                      type="number"
-                      value={stopValue}
-                      min={1}
-                      max={stopUnit === "years" ? tenure : tenure * 12}
-                      onChange={(e) =>
-                        setStopValue(Math.max(1, Number(e.target.value)))
-                      }
-                      className="w-20 px-3 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
-                      {(["years", "months"] as const).map((u) => (
-                        <button
-                          key={u}
-                          onClick={() => {
-                            if (u === stopUnit) return;
-                            if (u === "months")
-                              setStopValue(
-                                Math.min(stopValue * 12, tenure * 12),
-                              );
-                            else
-                              setStopValue(
-                                Math.max(1, Math.round(stopValue / 12)),
-                              );
-                            setStopUnit(u);
-                          }}
-                          className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${stopUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          {u}
-                        </button>
-                      ))}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      — then let it grow
+                    <span className="text-sm font-mono font-bold text-amber-400">
+                      {inflationRate}%
                     </span>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-border" />
-
-          {/* Skip Payments */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <ToggleSwitch
-                enabled={skipEnabled}
-                onChange={setSkipEnabled}
-                label="Skip Payments"
-              />
-            </div>
-            <AnimatePresence>
-              {skipEnabled && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-xs text-muted-foreground">
-                      Skip from
-                    </span>
-                    <input
-                      type="number"
-                      value={skipFrom}
-                      min={1}
-                      max={skipUnit === "years" ? tenure : tenure * 12}
-                      onChange={(e) => {
-                        const v = Math.max(1, Number(e.target.value));
-                        setSkipFrom(v);
-                        if (v > skipTo) setSkipTo(v);
-                      }}
-                      className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-xs text-muted-foreground">to</span>
-                    <input
-                      type="number"
-                      value={skipTo}
-                      min={skipFrom}
-                      max={skipUnit === "years" ? tenure : tenure * 12}
-                      onChange={(e) =>
-                        setSkipTo(Math.max(skipFrom, Number(e.target.value)))
-                      }
-                      className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
-                      {(["years", "months"] as const).map((u) => (
-                        <button
-                          key={u}
-                          onClick={() => setSkipUnit(u)}
-                          className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${skipUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                          {u}
-                        </button>
-                      ))}
-                    </div>
+                  <input
+                    type="range"
+                    min={2}
+                    max={12}
+                    step={0.5}
+                    value={inflationRate}
+                    onChange={(e) => setInflationRate(Number(e.target.value))}
+                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  />
+                  <div className="flex gap-2 flex-wrap">
+                    {[4, 5, 6, 7, 8].map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => setInflationRate(r)}
+                        className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${inflationRate === r ? "bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold" : "border-border text-muted-foreground hover:text-foreground"}`}
+                      >
+                        {r}%
+                      </button>
+                    ))}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Shows what your returns would be worth in today&apos;s
+                    purchasing power. India&apos;s historical avg CPI inflation
+                    is ~5-6%.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      )}
+      </div>
 
       {/* Results */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -683,9 +762,19 @@ export function CalculatorView() {
           <p className="text-2xl font-mono font-bold text-emerald-400">
             {formatCurrency(analysis.best.finalValue)}
           </p>
+          {inflationEnabled && (
+            <p className="text-xs font-mono text-amber-400 mt-0.5">
+              Real:{" "}
+              {formatCurrency(
+                deflate(analysis.best.finalValue, tenure, inflationRate),
+              )}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground mt-1">
-            CAGR: {analysis.best.cagr.toFixed(1)}% ({analysis.best.startYear}–
-            {analysis.best.endYear})
+            <Term t="CAGR" />: {analysis.best.cagr.toFixed(1)}%
+            {inflationEnabled &&
+              ` (Real: ${(analysis.best.cagr - inflationRate).toFixed(1)}%)`}{" "}
+            ({analysis.best.startYear}–{analysis.best.endYear})
           </p>
         </div>
         <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
@@ -698,9 +787,19 @@ export function CalculatorView() {
           <p className="text-2xl font-mono font-bold text-blue-400">
             {formatCurrency(analysis.avgFinal)}
           </p>
+          {inflationEnabled && (
+            <p className="text-xs font-mono text-amber-400 mt-0.5">
+              Real:{" "}
+              {formatCurrency(
+                deflate(analysis.avgFinal, tenure, inflationRate),
+              )}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground mt-1">
-            Avg CAGR: {analysis.avgCagr.toFixed(1)}% across{" "}
-            {analysis.totalWindows} windows
+            Avg <Term t="CAGR" />: {analysis.avgCagr.toFixed(1)}%
+            {inflationEnabled &&
+              ` (Real: ${(analysis.avgCagr - inflationRate).toFixed(1)}%)`}{" "}
+            across {analysis.totalWindows} windows
           </p>
         </div>
         <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
@@ -713,9 +812,19 @@ export function CalculatorView() {
           <p className="text-2xl font-mono font-bold text-red-400">
             {formatCurrency(analysis.worst.finalValue)}
           </p>
+          {inflationEnabled && (
+            <p className="text-xs font-mono text-amber-400 mt-0.5">
+              Real:{" "}
+              {formatCurrency(
+                deflate(analysis.worst.finalValue, tenure, inflationRate),
+              )}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground mt-1">
-            CAGR: {analysis.worst.cagr.toFixed(1)}% ({analysis.worst.startYear}–
-            {analysis.worst.endYear})
+            <Term t="CAGR" />: {analysis.worst.cagr.toFixed(1)}%
+            {inflationEnabled &&
+              ` (Real: ${(analysis.worst.cagr - inflationRate).toFixed(1)}%)`}{" "}
+            ({analysis.worst.startYear}–{analysis.worst.endYear})
           </p>
         </div>
         <div
@@ -740,6 +849,15 @@ export function CalculatorView() {
             {analysis.lossCount} of {analysis.totalWindows} windows had negative
             returns
           </p>
+          {inflationEnabled && (
+            <p className="text-xs text-amber-400/70 mt-1">
+              {
+                analysis.windows.filter((w) => w.cagr - inflationRate < 0)
+                  .length
+              }{" "}
+              of {analysis.totalWindows} negative after inflation
+            </p>
+          )}
         </div>
       </div>
 
@@ -749,13 +867,39 @@ export function CalculatorView() {
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-foreground">
               Best vs Worst — {tenure}Y
+              {inflationEnabled && " (with inflation-adjusted line)"}
             </h3>
             <span className="text-xs text-muted-foreground">
               Invested: {formatCurrency(analysis.best.totalInvested)}
             </span>
           </div>
           <div className="h-[300px]">
-            <Line data={scenarioChart} options={chartOpts} />
+            <Line
+              data={{
+                ...scenarioChart,
+                datasets: [
+                  ...scenarioChart.datasets,
+                  ...(inflationEnabled
+                    ? [
+                        {
+                          label: `Best (Real @ ${inflationRate}%)`,
+                          data: analysis.normalizedBest.map((v, idx) =>
+                            deflate(v, idx, inflationRate),
+                          ),
+                          borderColor: "#f59e0b",
+                          backgroundColor: "#f59e0b15",
+                          borderWidth: 2,
+                          borderDash: [6, 3],
+                          fill: false,
+                          tension: 0.4,
+                          pointRadius: 0,
+                        },
+                      ]
+                    : []),
+                ],
+              }}
+              options={chartOpts}
+            />
           </div>
         </div>
       )}
@@ -777,7 +921,9 @@ export function CalculatorView() {
               <tr>
                 <th className="px-4 py-3 text-left text-foreground w-8"></th>
                 <th className="px-4 py-3 text-left text-foreground">Period</th>
-                <th className="px-4 py-3 text-right text-foreground">CAGR</th>
+                <th className="px-4 py-3 text-right text-foreground">
+                  <Term t="CAGR" />
+                </th>
                 <th className="px-4 py-3 text-right text-foreground">
                   Total Return
                 </th>
@@ -814,6 +960,11 @@ export function CalculatorView() {
                           className={`px-4 py-2 text-right font-mono font-bold ${w.cagr >= 0 ? "text-emerald-400" : "text-red-400"}`}
                         >
                           {w.cagr.toFixed(1)}%
+                          {inflationEnabled && (
+                            <span className="block text-[10px] text-amber-400 font-normal">
+                              Real: {(w.cagr - inflationRate).toFixed(1)}%
+                            </span>
+                          )}
                         </td>
                         <td
                           className={`px-4 py-2 text-right font-mono ${w.totalReturn >= 0 ? "text-emerald-400" : "text-red-400"}`}
@@ -826,6 +977,14 @@ export function CalculatorView() {
                         </td>
                         <td className="px-4 py-2 text-right font-mono text-foreground">
                           {formatCurrency(w.finalValue)}
+                          {inflationEnabled && (
+                            <span className="block text-[10px] text-amber-400">
+                              Real:{" "}
+                              {formatCurrency(
+                                deflate(w.finalValue, tenure, inflationRate),
+                              )}
+                            </span>
+                          )}
                         </td>
                       </tr>
                       {isExpanded && w.monthlySnapshots && (
@@ -903,6 +1062,18 @@ export function CalculatorView() {
                                           </td>
                                           <td className="px-4 py-1.5 text-right font-mono text-foreground">
                                             {formatCurrency(snap.value)}
+                                            {inflationEnabled && (
+                                              <span className="block text-[9px] text-amber-400">
+                                                Real:{" "}
+                                                {formatCurrency(
+                                                  deflate(
+                                                    snap.value,
+                                                    snap.month / 12,
+                                                    inflationRate,
+                                                  ),
+                                                )}
+                                              </span>
+                                            )}
                                           </td>
                                           <td
                                             className={`px-4 py-1.5 text-right font-mono font-medium ${snap.gain >= 0 ? "text-emerald-400" : "text-red-400"}`}

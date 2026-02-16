@@ -19,6 +19,7 @@ import {
 import { Line } from "react-chartjs-2";
 import { fundDB, fundIds, years } from "./_components/fundData";
 import { CalculatorView } from "./_components/Calculator";
+import { Term } from "./_components/Term";
 import type { FundData } from "./_components/fundData";
 
 ChartJS.register(
@@ -624,12 +625,12 @@ function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
             Research Methodology
           </h3>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Over 20 years of NAV data has been analyzed to filter this specific
-            selection from 400+ mutual fund schemes. The criteria includes
-            consistent alpha generation over benchmark, crisis recovery speed,
-            style discipline through market cycles, and portfolio transparency.
-            Use the Return Calculator to simulate historical outcomes for any
-            fund over custom tenures.
+            Over 20 years of <Term t="NAV" /> data has been analyzed to filter
+            this specific selection from 400+ mutual fund schemes. The criteria
+            includes consistent alpha generation over benchmark, crisis recovery
+            speed, style discipline through market cycles, and portfolio
+            transparency. Use the Return Calculator to simulate historical
+            outcomes for any fund over custom tenures.
           </p>
         </div>
       </div>
@@ -655,9 +656,13 @@ function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
               <thead className="text-xs uppercase bg-secondary/50 border-b border-border">
                 <tr>
                   <th className="px-6 py-4 text-foreground">Fund</th>
-                  <th className="px-6 py-4 text-foreground">20Y CAGR</th>
+                  <th className="px-6 py-4 text-foreground">
+                    20Y <Term t="CAGR" />
+                  </th>
                   <th className="px-6 py-4 text-foreground">Beta</th>
-                  <th className="px-6 py-4 text-foreground">Expense</th>
+                  <th className="px-6 py-4 text-foreground">
+                    <Term t="Expense Ratio">Expense</Term>
+                  </th>
                   <th className="px-6 py-4 text-foreground">Risk</th>
                 </tr>
               </thead>
@@ -738,7 +743,7 @@ function FundProfileView({ fund }: { fund: FundData }) {
             {fund.cagr20}
           </p>
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            20-Year CAGR
+            20-Year <Term t="CAGR" />
           </p>
         </div>
       </div>
@@ -751,11 +756,21 @@ function FundProfileView({ fund }: { fund: FundData }) {
             <div className="space-y-3">
               {[
                 { l: "Launch Date", v: fund.launch },
-                { l: "AUM", v: fund.aum },
-                { l: "Expense Ratio", v: fund.expense },
+                { l: "AUM", v: fund.aum, term: "AUM" as const },
+                {
+                  l: "Expense Ratio",
+                  v: fund.expense,
+                  term: "Expense Ratio" as const,
+                },
               ].map((i) => (
                 <div key={i.l} className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{i.l}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {"term" in i && i.term ? (
+                      <Term t={i.term}>{i.l}</Term>
+                    ) : (
+                      i.l
+                    )}
+                  </span>
                   <span className="text-sm font-bold text-foreground">
                     {i.v}
                   </span>
