@@ -537,200 +537,206 @@ export function CalculatorView() {
         </div>
       </div>
 
-      {/* Advanced Options */}
-      <div className="rounded-xl border border-border bg-card/50 p-5 space-y-5">
+      {/* Advanced Options — horizontal row */}
+      <div
+        className={`grid gap-3 items-start ${mode === "sip" ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1"}`}
+      >
         {/* SIP-only options */}
         {mode === "sip" && (
           <>
             {/* Stop SIP After */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <ToggleSwitch
-                  enabled={stopEnabled}
-                  onChange={setStopEnabled}
-                  label="Stop SIP After"
-                />
-              </div>
-              <AnimatePresence>
-                {stopEnabled && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-xs text-muted-foreground">
-                        Stop after
-                      </span>
-                      <input
-                        type="number"
-                        value={stopValue}
-                        min={1}
-                        max={stopUnit === "years" ? tenure : tenure * 12}
-                        onChange={(e) =>
-                          setStopValue(Math.max(1, Number(e.target.value)))
-                        }
-                        className="w-20 px-3 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
-                        {(["years", "months"] as const).map((u) => (
-                          <button
-                            key={u}
-                            onClick={() => {
-                              if (u === stopUnit) return;
-                              if (u === "months")
-                                setStopValue(
-                                  Math.min(stopValue * 12, tenure * 12),
-                                );
-                              else
-                                setStopValue(
-                                  Math.max(1, Math.round(stopValue / 12)),
-                                );
-                              setStopUnit(u);
-                            }}
-                            className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${stopUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                          >
-                            {u}
-                          </button>
-                        ))}
+            <div className="rounded-xl border border-border bg-card/50 p-5">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <ToggleSwitch
+                    enabled={stopEnabled}
+                    onChange={setStopEnabled}
+                    label="Stop SIP After"
+                  />
+                </div>
+                <AnimatePresence>
+                  {stopEnabled && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs text-muted-foreground">
+                          Stop after
+                        </span>
+                        <input
+                          type="number"
+                          value={stopValue}
+                          min={1}
+                          max={stopUnit === "years" ? tenure : tenure * 12}
+                          onChange={(e) =>
+                            setStopValue(Math.max(1, Number(e.target.value)))
+                          }
+                          className="w-20 px-3 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
+                          {(["years", "months"] as const).map((u) => (
+                            <button
+                              key={u}
+                              onClick={() => {
+                                if (u === stopUnit) return;
+                                if (u === "months")
+                                  setStopValue(
+                                    Math.min(stopValue * 12, tenure * 12),
+                                  );
+                                else
+                                  setStopValue(
+                                    Math.max(1, Math.round(stopValue / 12)),
+                                  );
+                                setStopUnit(u);
+                              }}
+                              className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${stopUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            >
+                              {u}
+                            </button>
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          — then let it grow
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        — then let it grow
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-
-            {/* Divider */}
-            <div className="h-px bg-border" />
 
             {/* Skip Payments */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <ToggleSwitch
-                  enabled={skipEnabled}
-                  onChange={setSkipEnabled}
-                  label="Skip Payments"
-                />
-              </div>
-              <AnimatePresence>
-                {skipEnabled && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-xs text-muted-foreground">
-                        Skip from
-                      </span>
-                      <input
-                        type="number"
-                        value={skipFrom}
-                        min={1}
-                        max={skipUnit === "years" ? tenure : tenure * 12}
-                        onChange={(e) => {
-                          const v = Math.max(1, Number(e.target.value));
-                          setSkipFrom(v);
-                          if (v > skipTo) setSkipTo(v);
-                        }}
-                        className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <span className="text-xs text-muted-foreground">to</span>
-                      <input
-                        type="number"
-                        value={skipTo}
-                        min={skipFrom}
-                        max={skipUnit === "years" ? tenure : tenure * 12}
-                        onChange={(e) =>
-                          setSkipTo(Math.max(skipFrom, Number(e.target.value)))
-                        }
-                        className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
-                        {(["years", "months"] as const).map((u) => (
-                          <button
-                            key={u}
-                            onClick={() => setSkipUnit(u)}
-                            className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${skipUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                          >
-                            {u}
-                          </button>
-                        ))}
+            <div className="rounded-xl border border-border bg-card/50 p-5">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <ToggleSwitch
+                    enabled={skipEnabled}
+                    onChange={setSkipEnabled}
+                    label="Skip Payments"
+                  />
+                </div>
+                <AnimatePresence>
+                  {skipEnabled && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs text-muted-foreground">
+                          Skip from
+                        </span>
+                        <input
+                          type="number"
+                          value={skipFrom}
+                          min={1}
+                          max={skipUnit === "years" ? tenure : tenure * 12}
+                          onChange={(e) => {
+                            const v = Math.max(1, Number(e.target.value));
+                            setSkipFrom(v);
+                            if (v > skipTo) setSkipTo(v);
+                          }}
+                          className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          to
+                        </span>
+                        <input
+                          type="number"
+                          value={skipTo}
+                          min={skipFrom}
+                          max={skipUnit === "years" ? tenure : tenure * 12}
+                          onChange={(e) =>
+                            setSkipTo(
+                              Math.max(skipFrom, Number(e.target.value)),
+                            )
+                          }
+                          className="w-16 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
+                          {(["years", "months"] as const).map((u) => (
+                            <button
+                              key={u}
+                              onClick={() => setSkipUnit(u)}
+                              className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${skipUnit === u ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            >
+                              {u}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-
-            {/* Divider */}
-            <div className="h-px bg-border" />
           </>
         )}
 
         {/* Inflation Adjustment — available for both SIP and Lump Sum */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <ToggleSwitch
-              enabled={inflationEnabled}
-              onChange={setInflationEnabled}
-              label="Adjust for Inflation"
-            />
+        <div className="rounded-xl border border-border bg-card/50 p-5">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <ToggleSwitch
+                enabled={inflationEnabled}
+                onChange={setInflationEnabled}
+                label="Adjust for Inflation"
+              />
+            </div>
+            <AnimatePresence>
+              {inflationEnabled && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs text-muted-foreground">
+                        Avg. Inflation Rate
+                      </span>
+                      <span className="text-sm font-mono font-bold text-amber-400">
+                        {inflationRate}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={2}
+                      max={12}
+                      step={0.5}
+                      value={inflationRate}
+                      onChange={(e) => setInflationRate(Number(e.target.value))}
+                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-amber-500"
+                    />
+                    <div className="flex gap-2 flex-wrap">
+                      {[4, 5, 6, 7, 8].map((r) => (
+                        <button
+                          key={r}
+                          onClick={() => setInflationRate(r)}
+                          className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${inflationRate === r ? "bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold" : "border-border text-muted-foreground hover:text-foreground"}`}
+                        >
+                          {r}%
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                      Shows what your returns would be worth in today&apos;s
+                      purchasing power. India&apos;s historical avg CPI
+                      inflation is ~5-6%.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <AnimatePresence>
-            {inflationEnabled && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-xs text-muted-foreground">
-                      Avg. Inflation Rate
-                    </span>
-                    <span className="text-sm font-mono font-bold text-amber-400">
-                      {inflationRate}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={2}
-                    max={12}
-                    step={0.5}
-                    value={inflationRate}
-                    onChange={(e) => setInflationRate(Number(e.target.value))}
-                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-amber-500"
-                  />
-                  <div className="flex gap-2 flex-wrap">
-                    {[4, 5, 6, 7, 8].map((r) => (
-                      <button
-                        key={r}
-                        onClick={() => setInflationRate(r)}
-                        className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${inflationRate === r ? "bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold" : "border-border text-muted-foreground hover:text-foreground"}`}
-                      >
-                        {r}%
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    Shows what your returns would be worth in today&apos;s
-                    purchasing power. India&apos;s historical avg CPI inflation
-                    is ~5-6%.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
 
