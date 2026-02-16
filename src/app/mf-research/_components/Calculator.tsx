@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp,
@@ -9,6 +9,8 @@ import {
   Clock,
   AlertTriangle,
   ChevronDown,
+  ChevronRight,
+  Wallet,
 } from "lucide-react";
 import { Line } from "react-chartjs-2";
 import { fundDB, fundIds } from "./fundData";
@@ -76,7 +78,7 @@ function interpolateMonthlyNav(yearlyData: number[]): number[] {
 export function CalculatorView() {
   const [selectedFundId, setSelectedFundId] = useState("hdfc-flexi");
   const [mode, setMode] = useState<"lumpsum" | "sip">("sip");
-  const [amount, setAmount] = useState(10000);
+  const [amount, setAmount] = useState(1000);
   const [tenure, setTenure] = useState(15);
   const [stopEnabled, setStopEnabled] = useState(false);
   const [stopValue, setStopValue] = useState(5);
@@ -86,6 +88,10 @@ export function CalculatorView() {
   const [skipTo, setSkipTo] = useState(5);
   const [skipUnit, setSkipUnit] = useState<"years" | "months">("years");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [expandedWindow, setExpandedWindow] = useState<number | null>(null);
+  const [breakdownView, setBreakdownView] = useState<"monthly" | "yearly">(
+    "monthly",
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
   const fund = fundDB[selectedFundId];
 
@@ -136,6 +142,24 @@ export function CalculatorView() {
         const endNav = monthlyNav[endMonth];
         const totalReturn = ((endNav - startNav) / startNav) * 100;
         const cagr = (Math.pow(endNav / startNav, 1 / tenure) - 1) * 100;
+        // Monthly snapshots for lump sum
+        const monthlySnapshots: {
+          month: number;
+          invested: number;
+          value: number;
+          gain: number;
+        }[] = [];
+        const unitsHeld = amount / startNav;
+        for (let m = 0; m <= totalMonths; m++) {
+          const mi = startMonth + m;
+          const val = unitsHeld * monthlyNav[mi];
+          monthlySnapshots.push({
+            month: m,
+            invested: amount,
+            value: val,
+            gain: ((val - amount) / amount) * 100,
+          });
+        }
         windows.push({
           startYear: 2004 + s,
           endYear: 2004 + s + tenure,
@@ -143,11 +167,18 @@ export function CalculatorView() {
           cagr,
           finalValue: (amount / startNav) * endNav,
           totalInvested: amount,
+          monthlySnapshots,
         });
       } else {
         // SIP: month-by-month
         let totalInvested = 0;
         let units = 0;
+        const monthlySnapshots: {
+          month: number;
+          invested: number;
+          value: number;
+          gain: number;
+        }[] = [];
 
         for (let m = 0; m < totalMonths; m++) {
           const monthIndex = startMonth + m;
@@ -155,24 +186,31 @@ export function CalculatorView() {
 
           // Check stop
           if (stopAfterMonths !== null && m >= stopAfterMonths) {
-            // Stopped contributing
-            continue;
-          }
-
-          // Check skip
-          if (
+            // Stopped contributing — just record snapshot
+          } else if (
             skipFromMonth !== null &&
             skipToMonth !== null &&
             m >= skipFromMonth &&
             m < skipToMonth
           ) {
-            // Skipping this month
-            continue;
+            // Skipping this month — no contribution
+          } else {
+            // Contribute this month
+            totalInvested += amount;
+            units += amount / navAtMonth;
           }
 
-          // Contribute this month
-          totalInvested += amount;
-          units += amount / navAtMonth;
+          const currentValue = units * navAtMonth;
+          // Record every month
+          monthlySnapshots.push({
+            month: m + 1,
+            invested: totalInvested,
+            value: currentValue,
+            gain:
+              totalInvested > 0
+                ? ((currentValue - totalInvested) / totalInvested) * 100
+                : 0,
+          });
         }
 
         const finalNav = monthlyNav[endMonth];
@@ -186,6 +224,17 @@ export function CalculatorView() {
             ? (Math.pow(finalValue / totalInvested, 1 / tenure) - 1) * 100
             : 0;
 
+        // Add final month snapshot
+        monthlySnapshots.push({
+          month: totalMonths,
+          invested: totalInvested,
+          value: finalValue,
+          gain:
+            totalInvested > 0
+              ? ((finalValue - totalInvested) / totalInvested) * 100
+              : 0,
+        });
+
         windows.push({
           startYear: 2004 + s,
           endYear: 2004 + s + tenure,
@@ -193,6 +242,7 @@ export function CalculatorView() {
           cagr,
           finalValue,
           totalInvested,
+          monthlySnapshots,
         });
       }
     }
@@ -606,7 +656,23 @@ export function CalculatorView() {
       )}
 
       {/* Results */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Wallet className="w-4 h-4 text-violet-400" />
+            <span className="text-xs font-bold uppercase text-violet-400">
+              Total Invested
+            </span>
+          </div>
+          <p className="text-2xl font-mono font-bold text-violet-400">
+            {formatCurrency(analysis.best.totalInvested)}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {mode === "sip"
+              ? `${formatCurrency(amount)}/mo × ${tenure}Y`
+              : "One-time"}
+          </p>
+        </div>
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -696,16 +762,20 @@ export function CalculatorView() {
 
       {/* Table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-border flex justify-between items-center">
           <h3 className="font-bold text-foreground text-sm">
             All Historical {tenure}-Year Windows ({analysis.totalWindows}{" "}
             scenarios)
           </h3>
+          <span className="text-[10px] text-muted-foreground">
+            Click a row to expand period breakdown
+          </span>
         </div>
-        <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs uppercase bg-secondary/50 border-b border-border sticky top-0">
+            <thead className="text-xs uppercase bg-secondary/50 border-b border-border sticky top-0 z-10">
               <tr>
+                <th className="px-4 py-3 text-left text-foreground w-8"></th>
                 <th className="px-4 py-3 text-left text-foreground">Period</th>
                 <th className="px-4 py-3 text-right text-foreground">CAGR</th>
                 <th className="px-4 py-3 text-right text-foreground">
@@ -722,33 +792,136 @@ export function CalculatorView() {
             <tbody>
               {analysis.windows
                 .sort((a, b) => b.cagr - a.cagr)
-                .map((w, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
-                  >
-                    <td className="px-4 py-2 text-muted-foreground font-mono text-xs">
-                      {w.startYear}–{w.endYear}
-                    </td>
-                    <td
-                      className={`px-4 py-2 text-right font-mono font-bold ${w.cagr >= 0 ? "text-emerald-400" : "text-red-400"}`}
-                    >
-                      {w.cagr.toFixed(1)}%
-                    </td>
-                    <td
-                      className={`px-4 py-2 text-right font-mono ${w.totalReturn >= 0 ? "text-emerald-400" : "text-red-400"}`}
-                    >
-                      {w.totalReturn >= 0 ? "+" : ""}
-                      {w.totalReturn.toFixed(0)}%
-                    </td>
-                    <td className="px-4 py-2 text-right font-mono text-muted-foreground">
-                      {formatCurrency(w.totalInvested)}
-                    </td>
-                    <td className="px-4 py-2 text-right font-mono text-foreground">
-                      {formatCurrency(w.finalValue)}
-                    </td>
-                  </tr>
-                ))}
+                .map((w, i) => {
+                  const isExpanded = expandedWindow === i;
+                  return (
+                    <Fragment key={`window-${i}`}>
+                      <tr
+                        onClick={() => setExpandedWindow(isExpanded ? null : i)}
+                        className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
+                      >
+                        <td className="px-4 py-2 text-muted-foreground">
+                          {isExpanded ? (
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          ) : (
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-muted-foreground font-mono text-xs">
+                          {w.startYear}–{w.endYear}
+                        </td>
+                        <td
+                          className={`px-4 py-2 text-right font-mono font-bold ${w.cagr >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                        >
+                          {w.cagr.toFixed(1)}%
+                        </td>
+                        <td
+                          className={`px-4 py-2 text-right font-mono ${w.totalReturn >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                        >
+                          {w.totalReturn >= 0 ? "+" : ""}
+                          {w.totalReturn.toFixed(0)}%
+                        </td>
+                        <td className="px-4 py-2 text-right font-mono text-muted-foreground">
+                          {formatCurrency(w.totalInvested)}
+                        </td>
+                        <td className="px-4 py-2 text-right font-mono text-foreground">
+                          {formatCurrency(w.finalValue)}
+                        </td>
+                      </tr>
+                      {isExpanded && w.monthlySnapshots && (
+                        <tr key={`detail-${i}`}>
+                          <td colSpan={6} className="p-0">
+                            <div className="bg-secondary/20 border-y border-border/30">
+                              <div className="px-6 py-3 border-b border-border/20 flex items-center justify-between">
+                                <span className="text-xs font-bold uppercase text-muted-foreground">
+                                  {breakdownView === "monthly"
+                                    ? "Monthly"
+                                    : "Yearly"}{" "}
+                                  Breakdown — {w.startYear}–{w.endYear}
+                                </span>
+                                <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50">
+                                  {(["monthly", "yearly"] as const).map((v) => (
+                                    <button
+                                      key={v}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setBreakdownView(v);
+                                      }}
+                                      className={`px-2.5 py-1 rounded text-[10px] font-medium transition-all cursor-pointer ${breakdownView === v ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                                    >
+                                      {v}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="max-h-[250px] overflow-y-auto">
+                                <table className="w-full text-xs">
+                                  <thead className="sticky top-0 bg-secondary/40">
+                                    <tr>
+                                      <th className="px-6 py-2 text-left text-muted-foreground">
+                                        Month
+                                      </th>
+                                      <th className="px-4 py-2 text-right text-muted-foreground">
+                                        Invested
+                                      </th>
+                                      <th className="px-4 py-2 text-right text-muted-foreground">
+                                        Value
+                                      </th>
+                                      <th className="px-4 py-2 text-right text-muted-foreground">
+                                        Gain/Loss
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {w.monthlySnapshots
+                                      .filter(
+                                        (snap) =>
+                                          breakdownView === "monthly" ||
+                                          snap.month % 12 === 0,
+                                      )
+                                      .map((snap, si) => (
+                                        <tr
+                                          key={si}
+                                          className="border-b border-border/10 hover:bg-secondary/20"
+                                        >
+                                          <td className="px-6 py-1.5 font-mono text-muted-foreground">
+                                            {breakdownView === "yearly" ? (
+                                              <>Y{snap.month / 12}</>
+                                            ) : (
+                                              <>
+                                                M{snap.month}
+                                                {snap.month % 12 === 0 && (
+                                                  <span className="ml-1.5 text-[9px] text-primary/60">
+                                                    Y{snap.month / 12}
+                                                  </span>
+                                                )}
+                                              </>
+                                            )}
+                                          </td>
+                                          <td className="px-4 py-1.5 text-right font-mono text-muted-foreground">
+                                            {formatCurrency(snap.invested)}
+                                          </td>
+                                          <td className="px-4 py-1.5 text-right font-mono text-foreground">
+                                            {formatCurrency(snap.value)}
+                                          </td>
+                                          <td
+                                            className={`px-4 py-1.5 text-right font-mono font-medium ${snap.gain >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                                          >
+                                            {snap.gain >= 0 ? "+" : ""}
+                                            {snap.gain.toFixed(1)}%
+                                          </td>
+                                        </tr>
+                                      ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
             </tbody>
           </table>
         </div>
