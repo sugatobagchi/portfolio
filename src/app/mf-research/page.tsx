@@ -545,14 +545,17 @@ function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
           },
           {
             title: "Avg 20Y Alpha",
+            titleTerm: "Alpha",
             value: "+2.8%",
             sub: "CAGR over Nifty",
+            subTerms: ["CAGR", "Nifty"] as string[],
             desc: "Consistent outperformance generated purely through stock selection, not luck.",
             borderColor: "border-l-emerald-500",
             valueColor: "text-emerald-400",
           },
           {
             title: "Resilience Score",
+            titleTerm: "Resilience Score",
             value: "High",
             sub: "Recovery Rate",
             desc: "All selected funds recovered to pre-crash highs within 18-24 months of major crashes.",
@@ -565,7 +568,11 @@ function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
             className={`rounded-xl border border-border bg-card p-6 border-l-4 ${m.borderColor}`}
           >
             <h3 className="text-sm uppercase font-bold text-muted-foreground mb-2">
-              {m.title}
+              {"titleTerm" in m && m.titleTerm ? (
+                <Term t={m.titleTerm as string}>{m.title}</Term>
+              ) : (
+                m.title
+              )}
             </h3>
             <div className="flex items-baseline">
               <span className={`text-4xl font-mono font-bold ${m.valueColor}`}>
@@ -593,21 +600,36 @@ function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
             {[
               {
                 emoji: "🛡️",
-                title: "Large Cap & Flexi Cap",
+                title: (
+                  <>
+                    <Term t="Large Cap" /> &amp; <Term t="Flexi Cap" />
+                  </>
+                ),
+                key: "largeflexi",
                 desc: "The core engine. Funds like HDFC Top 100 provide stability, while Flexi Caps allow managers to navigate sectors freely.",
               },
               {
                 emoji: "🚀",
-                title: "Mid Cap Alpha",
+                title: (
+                  <>
+                    <Term t="Mid Cap" /> <Term t="Alpha" />
+                  </>
+                ),
+                key: "midcap",
                 desc: "Where the real wealth is made. Nippon Growth and Franklin Prima have turned small investments into fortunes over decades.",
               },
               {
                 emoji: "🌍",
-                title: "International Proxy (MNC)",
+                title: (
+                  <>
+                    International Proxy (<Term t="MNC Fund">MNC</Term>)
+                  </>
+                ),
+                key: "mnc",
                 desc: "True international funds lack 20-year history in India. ABSL MNC invests in global parentage companies for currency/governance diversification.",
               },
             ].map((item) => (
-              <li key={item.title} className="flex items-start">
+              <li key={item.key} className="flex items-start">
                 <span className="text-xl mr-3">{item.emoji}</span>
                 <div>
                   <h4 className="font-bold text-foreground">{item.title}</h4>
@@ -627,10 +649,11 @@ function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
           <p className="text-sm leading-relaxed text-muted-foreground">
             Over 20 years of <Term t="NAV" /> data has been analyzed to filter
             this specific selection from 400+ mutual fund schemes. The criteria
-            includes consistent alpha generation over benchmark, crisis recovery
-            speed, style discipline through market cycles, and portfolio
-            transparency. Use the Return Calculator to simulate historical
-            outcomes for any fund over custom tenures.
+            includes consistent <Term t="Alpha">alpha</Term> generation over{" "}
+            <Term t="Benchmark">benchmark</Term>, crisis recovery speed, style
+            discipline through market cycles, and portfolio transparency. Use
+            the Return Calculator to simulate historical outcomes for any fund
+            over custom tenures.
           </p>
         </div>
       </div>
@@ -659,11 +682,15 @@ function OverviewView({ onNavigate }: { onNavigate: (v: ViewId) => void }) {
                   <th className="px-6 py-4 text-foreground">
                     20Y <Term t="CAGR" />
                   </th>
-                  <th className="px-6 py-4 text-foreground">Beta</th>
+                  <th className="px-6 py-4 text-foreground">
+                    <Term t="Beta" />
+                  </th>
                   <th className="px-6 py-4 text-foreground">
                     <Term t="Expense Ratio">Expense</Term>
                   </th>
-                  <th className="px-6 py-4 text-foreground">Risk</th>
+                  <th className="px-6 py-4 text-foreground">
+                    <Term t="Risk Profile">Risk</Term>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -779,21 +806,23 @@ function FundProfileView({ fund }: { fund: FundData }) {
               <div className="h-px bg-border my-2" />
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">
-                  Alpha (vs BM)
+                  <Term t="Alpha">Alpha (vs BM)</Term>
                 </span>
                 <span className="text-sm font-bold text-emerald-400">
                   {fund.alpha}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Beta</span>
+                <span className="text-sm text-muted-foreground">
+                  <Term t="Beta" />
+                </span>
                 <span className="text-sm font-bold text-foreground">
                   {fund.beta}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">
-                  Risk Profile
+                  <Term t="Risk Profile" />
                 </span>
                 <span
                   className={`text-xs font-bold px-2 py-0.5 rounded border ${riskBadge(fund.risk)}`}
