@@ -101,6 +101,9 @@ export function CalculatorView() {
   const [skipUnit, setSkipUnit] = useState<"years" | "months">("years");
   const [inflationEnabled, setInflationEnabled] = useState(false);
   const [inflationRate, setInflationRate] = useState(6);
+  const [stepUpEnabled, setStepUpEnabled] = useState(false);
+  const [stepUpValue, setStepUpValue] = useState(10);
+  const [stepUpMode, setStepUpMode] = useState<"percent" | "fixed">("percent");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [expandedWindow, setExpandedWindow] = useState<number | null>(null);
   const [breakdownView, setBreakdownView] = useState<"monthly" | "yearly">(
@@ -198,6 +201,17 @@ export function CalculatorView() {
           const monthIndex = startMonth + m;
           const navAtMonth = monthlyNav[monthIndex];
 
+          // Step-up SIP: calculate the SIP amount for this month's year
+          const yearIndex = Math.floor(m / 12);
+          let sipAmount = amount;
+          if (stepUpEnabled && yearIndex > 0) {
+            if (stepUpMode === "percent") {
+              sipAmount = amount * Math.pow(1 + stepUpValue / 100, yearIndex);
+            } else {
+              sipAmount = amount + stepUpValue * yearIndex;
+            }
+          }
+
           // Check stop
           if (stopAfterMonths !== null && m >= stopAfterMonths) {
             // Stopped contributing — just record snapshot
@@ -210,8 +224,8 @@ export function CalculatorView() {
             // Skipping this month — no contribution
           } else {
             // Contribute this month
-            totalInvested += amount;
-            units += amount / navAtMonth;
+            totalInvested += sipAmount;
+            units += sipAmount / navAtMonth;
           }
 
           const currentValue = units * navAtMonth;
@@ -301,7 +315,18 @@ export function CalculatorView() {
       normalizedBest: normBest,
       normalizedWorst: normWorst,
     };
-  }, [fund, tenure, amount, mode, stopAfterMonths, skipFromMonth, skipToMonth]);
+  }, [
+    fund,
+    tenure,
+    amount,
+    mode,
+    stopAfterMonths,
+    skipFromMonth,
+    skipToMonth,
+    stepUpEnabled,
+    stepUpValue,
+    stepUpMode,
+  ]);
 
   const scenarioChart = useMemo(() => {
     if (!analysis) return null;
@@ -539,11 +564,77 @@ export function CalculatorView() {
 
       {/* Advanced Options — horizontal row */}
       <div
-        className={`grid gap-3 items-start ${mode === "sip" ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1"}`}
+        className={`grid gap-3 items-start ${mode === "sip" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" : "grid-cols-1"}`}
       >
         {/* SIP-only options */}
         {mode === "sip" && (
           <>
+            {/* Step-Up SIP */}
+            <div className="rounded-xl border border-border bg-card/50 p-5">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <ToggleSwitch
+                    enabled={stepUpEnabled}
+                    onChange={setStepUpEnabled}
+                    label="Yearly Increase"
+                  />
+                </div>
+                <AnimatePresence>
+                  {stepUpEnabled && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex gap-0.5 p-0.5 rounded-md bg-secondary/50 w-fit">
+                          {(["percent", "fixed"] as const).map((m) => (
+                            <button
+                              key={m}
+                              onClick={() => {
+                                setStepUpMode(m);
+                                setStepUpValue(m === "percent" ? 10 : 1000);
+                              }}
+                              className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${stepUpMode === m ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            >
+                              {m === "percent" ? "%" : "₹ Fixed"}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            Increase by
+                          </span>
+                          <input
+                            type="number"
+                            value={stepUpValue}
+                            min={stepUpMode === "percent" ? 1 : 100}
+                            max={stepUpMode === "percent" ? 50 : 100000}
+                            onChange={(e) =>
+                              setStepUpValue(
+                                Math.max(1, Number(e.target.value)),
+                              )
+                            }
+                            className="w-20 px-2 py-2 rounded-lg border border-border bg-card text-foreground font-mono text-sm text-center focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {stepUpMode === "percent" ? "% / year" : "₹ / year"}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed">
+                          {stepUpMode === "percent"
+                            ? `Y1: ${formatCurrency(amount)} → Y2: ${formatCurrency(Math.round(amount * (1 + stepUpValue / 100)))} → Y3: ${formatCurrency(Math.round(amount * Math.pow(1 + stepUpValue / 100, 2)))}/mo`
+                            : `Y1: ${formatCurrency(amount)} → Y2: ${formatCurrency(amount + stepUpValue)} → Y3: ${formatCurrency(amount + stepUpValue * 2)}/mo`}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+            
             {/* Stop SIP After */}
             <div className="rounded-xl border border-border bg-card/50 p-5">
               <div className="flex flex-col gap-3">
