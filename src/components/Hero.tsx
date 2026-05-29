@@ -192,11 +192,12 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             whileHover={{ scale: 1.02 }}
-            className="text-gradient pb-2 px-1 inline-block select-none cursor-default font-normal tracking-normal mb-4"
+            className="text-gradient px-1 inline-block select-none cursor-default font-normal tracking-normal mb-4"
             style={{
               fontFamily: "var(--font-signature)",
               fontSize: "clamp(3.8rem, 11vw, 6.8rem)",
-              lineHeight: "1.2",
+              lineHeight: "1.35",
+              paddingBottom: "0.25em",
             }}
           >
             Sugato Bagchi
