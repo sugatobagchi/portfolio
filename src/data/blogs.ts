@@ -467,15 +467,11 @@ if query.strip():
       {
         type: "heading",
         level: 2,
-        text: "The Cost Breakdown: The True Price of 1,600 Photos",
+        text: "The Cost Breakdown",
       },
       {
         type: "paragraph",
-        text: "Whenever developers hear the words \"Cloud API,\" they immediately expect a massive hidden bill. But the efficiency math here is one of the most surprising parts of the entire project.",
-      },
-      {
-        type: "paragraph",
-        text: "For this build, I ran **1,600 photos** through the `gemini-embedding-2` model to generate the 768-dimensional vectors. The final cost for indexing that entire vacation library was **just ₹16**.",
+        text: "For this build, I ran **1,600 photos** through the `gemini-embedding-2` model to generate the 768-dimensional vectors. The final cost for indexing that entire vacation library was **just ₹17**. or **$0.2**.",
       },
       {
         type: "image",

@@ -3,7 +3,7 @@ export const about = {
   location: "Kolkata, India",
   tagline: "The City of Joy",
   intro:
-    "Hey, I am a Software Engineer who genuinely enjoys building things, experimenting with new food, and having conversations with new people. I am naturally curious and driven by the satisfaction of turning ideas into something real and usable.",
+    "I am a Software Engineer who genuinely enjoys building things, experimenting with new food, and having conversations with new people. I am naturally curious and driven by the satisfaction of turning ideas into something real and usable.",
   sections: {
     whatIDo: {
       title: "What I Do",

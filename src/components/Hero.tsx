@@ -186,68 +186,20 @@ export default function Hero({ name, tagline, avatarUrl }: HeroProps) {
             />
           </motion.div>
 
-          {/* Animated name with 3D effect */}
+          {/* Animated signature name in one line */}
           <motion.h1
-            className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 tracking-tight leading-tight"
-            style={{ fontFamily: "var(--font-heading)" }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            whileHover={{ scale: 1.02 }}
+            className="text-gradient pb-2 px-1 inline-block select-none cursor-default font-normal tracking-normal mb-4"
+            style={{
+              fontFamily: "var(--font-signature)",
+              fontSize: "clamp(3.8rem, 11vw, 6.8rem)",
+              lineHeight: "1.2",
+            }}
           >
-            <motion.span
-              className="block text-foreground relative"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              whileHover={{
-                x: 10,
-              }}
-            >
-              {firstName.split("").map((char, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + i * 0.05 }}
-                  whileHover={{
-                    y: -8,
-                    color: "hsl(var(--primary))",
-                    transition: { duration: 0.1 },
-                  }}
-                  className="inline-block cursor-default"
-                >
-                  {char}
-                </motion.span>
-              ))}
-            </motion.span>
-            {lastName && (
-              <motion.span
-                className="block text-primary relative pb-2"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                whileHover={{
-                  x: 10,
-                }}
-              >
-                {lastName.split("").map((char, i) => (
-                  <motion.span
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + i * 0.05 }}
-                    whileHover={{
-                      y: -8,
-                      color: "hsl(var(--foreground))",
-                      ...({
-                        WebkitTextFillColor: "hsl(var(--foreground))",
-                      } as any),
-                      transition: { duration: 0.05 },
-                    }}
-                    className="inline-block cursor-default"
-                  >
-                    {char === " " ? "\u00A0" : char}
-                  </motion.span>
-                ))}
-              </motion.span>
-            )}
+            Sugato Bagchi
           </motion.h1>
 
           {/* Typewriter role */}

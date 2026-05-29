@@ -3,7 +3,7 @@
 import React, { use, useState, useRef, useEffect } from "react";
 import PageLayout from "@/components/PageLayout";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowLeft, Calendar, Clock, Copy, Check } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { blogs } from "@/data/blogs";
 import SocialIcons from "@/components/SocialIcons";
@@ -477,6 +477,8 @@ function ProgressBar() {
 
 function CodeBlock({ code, language }: { code: string; language: string }) {
   const [copied, setCopied] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
@@ -484,8 +486,33 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const lineCount = code.trim().split("\n").length;
+  const isCollapsible = lineCount > 6;
+
+  const toggleExpanded = () => {
+    if (isExpanded) {
+      setIsExpanded(false);
+      // Wait for a frame to let the height collapse transition begin, then scroll smoothly
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          // Align top of code block 120px below top of screen to account for sticky header
+          const targetY = rect.top + scrollTop - 120;
+
+          window.scrollTo({
+            top: targetY,
+            behavior: "smooth",
+          });
+        }
+      });
+    } else {
+      setIsExpanded(true);
+    }
+  };
+
   return (
-    <div className="code-block">
+    <div ref={containerRef} className="code-block relative group/code">
       <div className="code-block-header">
         <span>{language}</span>
         <button
@@ -500,9 +527,53 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
           )}
         </button>
       </div>
-      <pre>
-        <code>{code}</code>
-      </pre>
+
+      <motion.div
+        animate={{ height: isCollapsible && !isExpanded ? 150 : "auto" }}
+        transition={{
+          type: "spring",
+          stiffness: 220,
+          damping: 28,
+          mass: 1,
+        }}
+        className="relative overflow-hidden"
+      >
+        <pre className="m-0">
+          <code>{code}</code>
+        </pre>
+
+        {isCollapsible && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: isExpanded ? 0 : 1 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+            style={{
+              background: "linear-gradient(to top, hsl(222 47% 6%) 15%, transparent 100%)",
+            }}
+          />
+        )}
+      </motion.div>
+
+      {isCollapsible && (
+        <div className="flex justify-center border-t border-zinc-800/20 bg-zinc-950/10 py-3">
+          <motion.button
+            onClick={toggleExpanded}
+            whileHover={{ scale: 1.03, backgroundColor: "rgba(255, 255, 255, 0.08)" }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all cursor-pointer py-1.5 px-4 rounded-full border border-border/40 hover:border-primary/40 bg-zinc-950/40 shadow-sm"
+          >
+            <span>{isExpanded ? "Collapse code" : "Expand code"}</span>
+            <motion.span
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ type: "spring", stiffness: 220, damping: 20 }}
+              className="flex items-center"
+            >
+              <ChevronDown className="w-3.5 h-3.5 text-primary" />
+            </motion.span>
+          </motion.button>
+        </div>
+      )}
     </div>
   );
 }
