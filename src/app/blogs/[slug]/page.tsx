@@ -131,8 +131,11 @@ export default function BlogDetailPage({ params }: PageProps) {
 
   return (
     <PageLayout>
-      <div className="min-h-screen">
-        <div className="w-full relative">
+      <div className="min-h-screen relative overflow-hidden">
+        {/* Diagonal Ropes Background */}
+        <DiagonalRopesBackground />
+
+        <div className="w-full relative z-10">
           <div className="max-w-4xl mx-auto px-5 sm:px-8 pb-24 relative">
             {/* Left vertical progress tracker - desktop only */}
             {mounted && <ProgressBar />}
@@ -577,3 +580,135 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
     </div>
   );
 }
+
+const ROPE_PATH_1 = "M 0 0 C 250 100, 250 400, 500 500 C 750 600, 750 900, 1000 1000";
+const ROPE_PATH_2 = "M 1000 0 C 750 100, 750 400, 500 500 C 250 600, 250 900, 0 1000";
+
+const ROPE_PATH_1B = "M 8 0 C 258 100, 258 400, 508 500 C 758 600, 758 900, 1008 1000";
+const ROPE_PATH_2B = "M 992 0 C 742 100, 742 400, 492 500 C 242 600, 242 900, -8 1000";
+
+const DiagonalRopesBackground = () => {
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 w-full h-full opacity-15 sm:opacity-25 dark:opacity-20 dark:sm:opacity-35">
+      <svg
+        className="w-full h-full"
+        viewBox="0 0 1000 1000"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          {/* Gradients for Rope 1 (Indigo to Cyan) */}
+          <linearGradient id="rope-grad-1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+            <stop offset="20%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity="1" />
+            <stop offset="80%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+          </linearGradient>
+
+          {/* Gradients for Rope 2 (Teal to Blue) */}
+          <linearGradient id="rope-grad-2" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.1" />
+            <stop offset="20%" stopColor="hsl(var(--accent))" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+            <stop offset="80%" stopColor="hsl(var(--accent))" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.1" />
+          </linearGradient>
+
+          {/* Glow filter for ropes */}
+          <filter id="rope-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          {/* Glow filter for balls */}
+          <filter id="ball-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="10" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          {/* Ball 1 Radial Gradient (Cyan/Blue core) */}
+          <radialGradient id="ball-glow-grad-1" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+            <stop offset="25%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
+            <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Ball 2 Radial Gradient (Purple/Indigo core) */}
+          <radialGradient id="ball-glow-grad-2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+            <stop offset="25%" stopColor="hsl(var(--accent))" stopOpacity="0.9" />
+            <stop offset="60%" stopColor="hsl(var(--accent))" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Rope 1: Top-Left to Bottom-Right */}
+        <path
+          d={ROPE_PATH_1}
+          fill="none"
+          stroke="url(#rope-grad-1)"
+          strokeWidth="3.5"
+          filter="url(#rope-glow)"
+        />
+        {/* Rope 1 secondary line for 3D look */}
+        <path
+          d={ROPE_PATH_1B}
+          fill="none"
+          stroke="url(#rope-grad-1)"
+          strokeWidth="1.2"
+          opacity="0.5"
+        />
+
+        {/* Rope 2: Top-Right to Bottom-Left */}
+        <path
+          d={ROPE_PATH_2}
+          fill="none"
+          stroke="url(#rope-grad-2)"
+          strokeWidth="3.5"
+          filter="url(#rope-glow)"
+        />
+        {/* Rope 2 secondary line for 3D look */}
+        <path
+          d={ROPE_PATH_2B}
+          fill="none"
+          stroke="url(#rope-grad-2)"
+          strokeWidth="1.2"
+          opacity="0.5"
+        />
+
+        {/* Glowing Ball 1 traveling on Rope 1 */}
+        <g>
+          {/* Soft outer glow */}
+          <circle r="22" fill="url(#ball-glow-grad-1)" opacity="0.85" filter="url(#ball-glow)" />
+          {/* Extra bright core */}
+          <circle r="6" fill="#ffffff" opacity="0.95" />
+          <animateMotion
+            dur="15s"
+            repeatCount="indefinite"
+            path={ROPE_PATH_1}
+          />
+        </g>
+
+        {/* Glowing Ball 2 traveling on Rope 2 */}
+        <g>
+          {/* Soft outer glow */}
+          <circle r="22" fill="url(#ball-glow-grad-2)" opacity="0.85" filter="url(#ball-glow)" />
+          {/* Extra bright core */}
+          <circle r="6" fill="#ffffff" opacity="0.95" />
+          <animateMotion
+            dur="18s"
+            repeatCount="indefinite"
+            path={ROPE_PATH_2}
+          />
+        </g>
+      </svg>
+    </div>
+  );
+};
