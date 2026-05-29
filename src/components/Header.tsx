@@ -17,19 +17,48 @@ export default function Header({ navItems }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Update scrolled state for backdrop blurring
+      setIsScrolled(currentScrollY > 20);
+
+      const isBlogPostPage = pathname.startsWith("/blogs/");
+      const isDesktop = window.innerWidth >= 768; // md breakpoint
+
+      if (isBlogPostPage && isDesktop) {
+        if (currentScrollY > 100 && currentScrollY > lastScrollY) {
+          // Scrolling down past threshold -> hide navbar
+          setIsHeaderVisible(false);
+        } else {
+          // Scrolling up or near top -> show navbar
+          setIsHeaderVisible(true);
+        }
+      } else {
+        // Not on a blog post page or on mobile view -> keep navbar visible
+        setIsHeaderVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY, pathname]);
 
   return (
     <>
       <motion.header
         initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ 
+          y: isHeaderVisible ? 0 : -80, 
+          opacity: isHeaderVisible ? 1 : 0 
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         className={`sticky top-0 z-50 w-full transition-all duration-300 ${
           isScrolled
             ? "glass shadow-sm border-b border-border/40"
