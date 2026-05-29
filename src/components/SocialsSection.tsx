@@ -2,7 +2,8 @@
 
 import { socials } from "@/data/socials";
 import Link from "next/link";
-import { SiGithub, SiLinkedin, SiX, SiInstagram } from "react-icons/si";
+import { SiGithub, SiX, SiInstagram } from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa";
 import { motion } from "framer-motion";
 import SectionHeading from "./ui/SectionHeading";
 
@@ -20,7 +21,7 @@ const socialIconMap: Record<
     bg: "group-hover:bg-[#333]",
   },
   LinkedIn: {
-    icon: SiLinkedin,
+    icon: FaLinkedin,
     color: "group-hover:text-white",
     bg: "group-hover:bg-[#0A66C2]",
   },

@@ -2,7 +2,8 @@
 
 import { socials } from "@/data/socials";
 import Link from "next/link";
-import { SiGithub, SiLinkedin, SiX, SiInstagram } from "react-icons/si";
+import { SiGithub, SiX, SiInstagram } from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa";
 import { motion, useAnimation } from "framer-motion";
 import { useState, useCallback, useEffect } from "react";
 
@@ -11,7 +12,7 @@ const socialIconMap: Record<
   { icon: React.ComponentType<{ className?: string }>; color: string }
 > = {
   GitHub: { icon: SiGithub, color: "hover:bg-[#333] hover:text-white" },
-  LinkedIn: { icon: SiLinkedin, color: "hover:bg-[#0A66C2] hover:text-white" },
+  LinkedIn: { icon: FaLinkedin, color: "hover:bg-[#0A66C2] hover:text-white" },
   X: {
     icon: SiX,
     color:
