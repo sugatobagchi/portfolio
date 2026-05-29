@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Italianno&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -23,8 +24,9 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-heading: "Outfit", "Inter", system-ui, sans-serif;
+  --font-sans: "Google Sans", "Inter", system-ui, sans-serif;
+  --font-heading: "Google Sans", "Outfit", "Inter", system-ui, sans-serif;
+  --font-signature: "Italianno", cursive;
   --font-mono: "Fira Code", "Fira Mono", monospace;
 }
 
@@ -169,10 +171,10 @@
 
   /* Glassmorphism */
   .glass {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.07);
   }
 
   .dark .glass {
@@ -288,6 +290,129 @@
   .section-divider {
     @apply w-24 h-1 rounded-full mb-8;
     background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+
+  /* ─── Blog Article Prose ─────────────────────────────────────── */
+  .prose-article {
+    font-family: var(--font-sans);
+    color: hsl(var(--foreground) / 0.85);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  .prose-article p {
+    margin-bottom: 1.6rem;
+    letter-spacing: 0.01em;
+  }
+
+  .prose-article p:last-child {
+    margin-bottom: 0;
+  }
+
+  .prose-article h2 {
+    font-family: var(--font-heading);
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    margin-top: 3.5rem;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+  }
+
+  .prose-article h3 {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin-top: 2.75rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .prose-article ul {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .prose-article li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    color: hsl(var(--foreground) / 0.8);
+    font-size: 0.975rem;
+  }
+
+  .prose-article li::before {
+    content: '→';
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+    margin-top: 0.1em;
+    font-size: 0.85rem;
+  }
+
+  .prose-article blockquote {
+    border-left: 3px solid hsl(var(--primary));
+    margin: 2rem 0;
+    padding: 1rem 1.5rem;
+    background: hsl(var(--muted) / 0.4);
+    border-radius: 0 0.5rem 0.5rem 0;
+    font-style: italic;
+    color: hsl(var(--foreground) / 0.75);
+    font-size: 1rem;
+  }
+
+  /* ─── Code Block ─────────────────────────────────────────────── */
+  .code-block {
+    margin: 2rem 0;
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+    background: hsl(222 47% 6%);
+  }
+
+  .code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: hsl(222 47% 4%);
+    border-bottom: 1px solid hsl(222 47% 12%);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: hsl(215 20% 50%);
+  }
+
+  .code-copy-btn {
+    cursor: pointer;
+    color: hsl(215 20% 50%);
+    transition: color 0.2s;
+    font-size: 0.7rem;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .code-copy-btn:hover {
+    color: hsl(210 40% 90%);
+  }
+
+  .code-block pre {
+    padding: 1.25rem 1rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: hsl(210 40% 82%);
+    margin: 0;
   }
 }
 

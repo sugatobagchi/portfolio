@@ -3,8 +3,10 @@
 import PageLayout from "@/components/PageLayout";
 import { motion } from "framer-motion";
 import { Lightbulb, Sparkles, Rocket, Code2, Brain } from "lucide-react";
+import { notFound } from "next/navigation";
 
 export default function ProjectsPage() {
+  notFound();
   return (
     <PageLayout>
       <div className="min-h-screen py-16 md:py-24 px-4 sm:px-6 flex items-center justify-center">

@@ -18,18 +18,18 @@ export const features: Feature[] = [
     href: "/experience",
     enabled: true,
   },
-  {
-    id: "top-100",
-    label: "Top-100",
-    href: "/top-100",
-    enabled: true,
-  },
-  {
-    id: "projects",
-    label: "Projects",
-    href: "/projects",
-    enabled: true,
-  },
+//   {
+//     id: "top-100",
+//     label: "Top-100",
+//     href: "/top-100",
+//     enabled: true,
+//   },
+//   {
+//     id: "projects",
+//     label: "Projects",
+//     href: "/projects",
+//     enabled: true,
+//   },
   {
     id: "blogs",
     label: "Blogs",
