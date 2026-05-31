@@ -309,7 +309,7 @@ if __name__ == "__main__":
           "**2. Directory Scanning**: The engine scans your photos/ folder recursively. It identifies valid image files, naturally handling standard formats like .jpg and .png as well as mobile formats like .heic and .heif while ignoring hidden system clutter.",
           "**3. Duplicate Prevention (MD5 Hashing)**: Before hitting the API, the script reads each photo in tiny 4KB chunks to calculate a unique MD5 cryptographic fingerprint. It checks ChromaDB for this ID. If the fingerprint exists, it instantly skips the file. This ensures you never waste bandwidth or tokens on duplicate images.",
           "**4. Vector Generation**: For brand-new photos, the script reads the raw bytes, wraps them in a Part.from_bytes object, and sends them to the gemini-embedding-2 model. Gemini analyzes the pixels and translates the entire visual concept into a mathematical vector of 768 floating-point numbers.",
-          "**5. Metadata Storage**: The script saves the image vector, its MD5 hash, and key metadata into ChromaDB. It automatically grabs file_path.parent.name to use as the trip_name. Because your folders are named after your destinations (like Coorg or Mumbai), the system tags your photos automatically.",
+          "**5. Metadata Storage**: The script saves the image vector, its MD5 hash, and metadata into ChromaDB. It automatically grabs file_path.parent.name to use as the trip_name. Because your folders are named after your destinations (like Coorg or Mumbai), the system tags your photos automatically.",
           "**6. Parallel Processing**: Instead of uploading images one by one, the script uses a ThreadPoolExecutor to process multiple images concurrently over parallel network channels. This eliminates system idle time and indexes your entire local library in a flash.",
         ],
       },
@@ -324,7 +324,7 @@ if __name__ == "__main__":
       },
       {
         type: "paragraph",
-        text: "With our image database populated, we need a simple, interactive browser interface. This is where Streamlit shines, letting us spin up a clean web app in under 100 lines of pure Python.",
+        text: "With our image database, we need a simple, interactive browser interface. This is where Streamlit shines, letting us spin up a clean web app in under 100 lines of pure Python.",
       },
       {
         type: "paragraph",
