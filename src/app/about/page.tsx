@@ -92,7 +92,7 @@ function SectionTitle({
   iconColor: string;
   iconBg: string;
   title: string;
-  animate?: object;
+  animate?: Record<string, number[]>;
 }) {
   return (
     <div className="flex items-center gap-4 mb-10">
