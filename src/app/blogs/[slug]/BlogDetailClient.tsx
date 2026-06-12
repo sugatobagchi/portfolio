@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, Clock, Copy, Check, ChevronDown } from "lucide-rea
 import Link from "next/link";
 import { BlogPost } from "@/data/blogs";
 import SocialIcons from "@/components/SocialIcons";
+import A2UIChatWidget from "@/components/agent/A2UIChatWidget";
 
 interface BlogDetailClientProps {
   post: BlogPost | undefined;
@@ -127,7 +128,7 @@ export default function BlogDetailClient({ post }: BlogDetailClientProps) {
   }
 
   return (
-    <PageLayout>
+    <PageLayout themeTogglePosition="left">
       <div className="min-h-screen relative overflow-hidden">
         {/* Diagonal Ropes Background */}
         <DiagonalRopesBackground />
@@ -316,6 +317,32 @@ export default function BlogDetailClient({ post }: BlogDetailClientProps) {
                         </div>
                       );
                     }
+                    if (block.widget === "chat-prompts") {
+                      return (
+                        <div key={idx} className="my-8 not-prose">
+                          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                            Try it live — click any prompt below
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {(block.items ?? []).map((prompt) => (
+                              <button
+                                key={prompt}
+                                type="button"
+                                onClick={() =>
+                                  window.dispatchEvent(
+                                    new CustomEvent("a2ui-prompt", { detail: { prompt } })
+                                  )
+                                }
+                                className="group inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary/70 px-4 py-2 text-sm font-medium text-primary transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                              >
+                                <span className="text-primary/60 group-hover:text-primary transition-colors">▶</span>
+                                {prompt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
                     return null;
 
                   default:
@@ -326,6 +353,10 @@ export default function BlogDetailClient({ post }: BlogDetailClientProps) {
           </div>
         </div>
       </div>
+
+      {post?.slug === "a2ui-portfolio-demo" && (
+        <A2UIChatWidget />
+      )}
     </PageLayout>
   );
 }

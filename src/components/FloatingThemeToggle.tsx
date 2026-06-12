@@ -7,18 +7,21 @@ import { motion, AnimatePresence } from "framer-motion";
 interface FloatingThemeToggleProps {
   theme: string;
   onToggle: () => void;
+  position?: "left" | "right";
 }
 
 export default function FloatingThemeToggle({
   theme,
   onToggle,
+  position = "right",
 }: FloatingThemeToggleProps) {
+  const positionClass = position === "left" ? "fixed bottom-6 left-6 z-50" : "fixed bottom-6 right-6 z-50";
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.5 }}
-      className="fixed bottom-6 right-6 z-50"
+      className={positionClass}
     >
       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
         <Button

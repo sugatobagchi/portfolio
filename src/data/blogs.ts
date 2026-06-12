@@ -1,5 +1,13 @@
 export interface BlogBlock {
-  type: "paragraph" | "heading" | "list" | "code" | "quote" | "interactive" | "image" | "video";
+  type:
+    | "paragraph"
+    | "heading"
+    | "list"
+    | "code"
+    | "quote"
+    | "interactive"
+    | "image"
+    | "video";
   level?: 1 | 2 | 3;
   text?: string;
   items?: string[];
@@ -25,6 +33,201 @@ export interface BlogPost {
 }
 
 export const blogs: BlogPost[] = [
+  {
+    slug: "a2ui-portfolio-demo",
+    title:
+      "When Your Agent Stops Talking and Starts Showing: Exploring Google's A2UI",
+    excerpt:
+      "Agents have been stuck returning text since the beginning. A2UI changes that. Here is how I built a declarative UI agent directly into this portfolio, and why the same pattern works for enterprise too.",
+    date: "June 13, 2026",
+    readTime: "7 min read",
+    category: "Artificial Intelligence",
+    tags: ["A2UI", "Agents", "Gemini", "Vertex AI", "Next.js"],
+    gradientClass:
+      "from-emerald-600/20 via-teal-600/10 to-cyan-600/20 border-emerald-500/20",
+    content: [
+      {
+        type: "paragraph",
+        text: "There is a conversation every developer building conversational agents has had. A user asks something that would be answered in two seconds with a dropdown or a map. Instead, the agent returns a wall of text. The user squints, copies a date, pastes it back, and the agent asks a follow-up anyway. This is not a model quality problem. The model understood the question perfectly. It is a medium problem. Agents have been locked into returning strings since the day they were invented.",
+      },
+      {
+        type: "paragraph",
+        text: "A2UI changes that. And this very page is running a live implementation of it.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The Problem Is the Medium, Not the Model",
+      },
+      {
+        type: "paragraph",
+        text: "Most agent frameworks, regardless of how good the underlying model is, treat the response surface as a text terminal. The agent can reason, plan, use tools, call APIs. But at the boundary where it meets the user, all of that collapses into a string.",
+      },
+      {
+        type: "paragraph",
+        text: "That is fine for question-answer tasks. It breaks down fast for everything else. Multi-turn slot filling wastes turns and patience. Choices among options become bulleted lists the user has to re-read and type back. Spatial information gets reduced to addresses. Timelines get collapsed into paragraphs. The agent knows the structure of the data. It just has no way to transmit that structure to the interface.",
+      },
+      {
+        type: "paragraph",
+        text: "The patches people reach for make things worse. Sending HTML or JavaScript fragments introduces cross-site scripting risk, visual drift from your design system, and UI injection from a remote agent you do not fully control. What is actually needed is a way to transmit UI that is as safe as data and as expressive as code.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What A2UI Is",
+      },
+      {
+        type: "paragraph",
+        text: "A2UI is an open protocol, introduced by Google and co-developed with the Flutter team and product teams behind Gemini Enterprise. Instead of returning text or HTML, an agent returns a JSON payload that describes a UI. That payload is a tree of components paired with a data model holding the values those components display.",
+      },
+      {
+        type: "paragraph",
+        text: "Three properties make this useful in practice. First, it is declarative, not executable. The payload is data. The client only renders components from a pre-approved catalog, so a remote agent cannot inject arbitrary code or steal credentials through a UI widget. Second, it is streaming-friendly. The format is a flat list of small JSON messages, so the model can emit them incrementally and the client can paint as they arrive. Third, it is framework-agnostic. The same agent response can render through React, Lit, Angular, Flutter, or native mobile. The agent does not know or care what is on the other end.",
+      },
+      {
+        type: "quote",
+        text: "The agent knows the structure of the data. A2UI gives it a way to transmit that structure to the interface, safely and incrementally, without caring what framework is rendering it.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Where A2UI Sits in the Stack",
+      },
+      {
+        type: "paragraph",
+        text: "The confusion about A2UI usually comes from conflating four distinct layers that are each doing a different job. The app experience layer (the chat window, input box, message history) is owned by whatever shell you are using. The rendering layer turns component descriptions into actual pixels. The conversation pipeline handles client-to-server transport. And A2UI is the cargo, the structured thing flowing through that pipeline that describes the UI.",
+      },
+      {
+        type: "paragraph",
+        text: "That separation is why the same A2UI payload can render in completely different deployment shapes. A bespoke web app with a custom renderer. A CopilotKit or AG-UI shell with an A2UI renderer registered inside it. Or Gemini Enterprise, where GE is the shell, the renderer, and the transport. You only build the agent. The protocol is the constant. Everything else is swappable.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "How I Built It Into This Portfolio",
+      },
+      {
+        type: "paragraph",
+        text: "The implementation here is intentionally minimal but fully representative of how A2UI works in production. There are three moving parts. A component catalog, a system instruction that tells the model which component to use and when, and a client that renders whatever component name arrives in the JSON.",
+      },
+      {
+        type: "paragraph",
+        text: "The catalog is a registry of named React components. Timeline, SkillGrid, LocationMap, and VolunteerList. Each component knows how to render a specific kind of structured data. The agent never sees any React code. It only sees a list of component names and the prop shapes each one accepts, embedded directly in the system instruction.",
+      },
+      {
+        type: "paragraph",
+        text: "When a message arrives, the agent decides whether a UI widget is the right answer. If it is, it emits a JSON response with a component name and props object rather than prose. If text is more appropriate, it falls back to text. Both can coexist in the same response, and in this implementation, they always do. The agent sends a short message alongside every component.",
+      },
+      {
+        type: "paragraph",
+        text: "On the client, the widget reads the component name from the JSON, looks it up in the catalog, and renders it. There is no eval, no innerHTML, no dynamic imports. The surface area for injection is exactly zero.",
+      },
+      {
+        type: "interactive",
+        widget: "chat-prompts",
+        items: [
+          "Show me your career timeline",
+          "What's your tech stack?",
+          "Where are you based?",
+        ],
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The Catalog Is the Contract",
+      },
+      {
+        type: "paragraph",
+        text: "The most important design decision in any A2UI implementation is the catalog. It is the contract between your agent and your UI. Everything the agent can render has to exist in the catalog. Everything in the catalog has to be something your frontend knows how to draw.",
+      },
+      {
+        type: "paragraph",
+        text: "This constraint is a feature. The catalog is finite and pre-approved, so you can audit it, test it, and version it independently of the agent. When you add a new component, you add it to the catalog and update the system instruction. The agent immediately gains the ability to use it, with no model retraining and no prompt injection risk. You are extending a surface, not patching a string.",
+      },
+      {
+        type: "paragraph",
+        text: "In this portfolio, the catalog has four components. A production system might have forty. The pattern is identical at either scale. Name, props schema, render function. What changes is the breadth of what the agent can express.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "How the Same Pattern Scales from Side Project to Enterprise",
+      },
+      {
+        type: "paragraph",
+        text: "What I find genuinely interesting about A2UI is that the architectural pattern does not change between a personal side project and an enterprise deployment. The catalog model, the JSON contract, the separation between agent logic and render logic. All of it is identical. What differs is the catalog size, the infrastructure underneath, and the number of people using it.",
+      },
+      {
+        type: "paragraph",
+        text: "For a personal project, the integration surface is small. You write a few components, embed the catalog description in your system instruction, point your frontend at the JSON field. The overhead is maybe an afternoon. The payoff is that your agent can show a map, render a timeline, or display a skill matrix instead of describing them in prose.",
+      },
+      {
+        type: "paragraph",
+        text: "For enterprise, the picture looks different only in degree. Gemini Enterprise ships with a built-in A2UI renderer. The integration story for enterprise teams collapses to three steps. Build your A2A-compliant agent with a catalog and example payloads, register the agent as an A2A endpoint, and have a GE admin share it with employees like any other agent in the catalog. At runtime, GE calls your agent's endpoint and sends along its own component catalog, the list of UI components GE knows how to render. Your agent decides which component fits, emits the JSON, and GE renders it natively in GE's own design language.",
+      },
+      {
+        type: "paragraph",
+        text: "The developer never chooses a frontend framework for the GE deployment. The agent can run on Cloud Run, GKE, or on-premise. GE handles the rendering. The only thing the developer controls is the A2A endpoint and the A2UI cargo it emits.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Why the Clean Integration Is Not Accidental",
+      },
+      {
+        type: "paragraph",
+        text: "The clean integration story, both here and in Gemini Enterprise, is a result of keeping the layers separate. A2UI is cargo and not code, so it rides inside whatever transport pipe already exists. In this portfolio, the agent streams JSON over a standard POST response. In a production A2A deployment, A2UI rides inside A2A JSON-RPC as DataPart objects with the MIME type application/json+a2ui. The format is the same. The transport is whatever you have.",
+      },
+      {
+        type: "paragraph",
+        text: "The catalog is a registry and not a codebase, so swapping the renderer is a configuration change, not a rewrite. The Google Cloud reference implementation serves both the inline pattern (component tree with data baked in) and the decoupled pattern (component tree and data model as separate messages) from one backend, picking which to emit per request based on the client's headers. You can support multiple client types without maintaining multiple agents.",
+      },
+      {
+        type: "paragraph",
+        text: "And because the agent only emits JSON, the entire architecture is observable. Every UI decision the agent makes is a structured log entry. Debugging is not grepping strings. It is inspecting component names and prop values.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What This Looks Like From the User Side",
+      },
+      {
+        type: "paragraph",
+        text: "The user in this portfolio never sees any of the above. They ask a question, and instead of a paragraph, they get a rendered interface. A career timeline that flows top to bottom with animated connectors. A skill grid split by domain with color-coded sections. A Google Maps embed showing Kolkata rather than a typed address. The agent is still a language model, but the output feels like a product.",
+      },
+      {
+        type: "paragraph",
+        text: "That is the shift A2UI makes possible. Not smarter models. Not better prompts. A different medium.",
+      },
+      {
+        type: "interactive",
+        widget: "chat-prompts",
+        items: [
+          "Show me your career timeline",
+          "What's your tech stack?",
+          "Where are you based?",
+          "Tell me about community work",
+        ],
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Building Your Own",
+      },
+      {
+        type: "paragraph",
+        text: "If you want to implement A2UI in your own project, the shortest path is to start with the catalog. Identify three or four things your agent currently returns as text that would be better as a UI. Think tables, timelines, maps, card grids. Write React (or Lit, or Flutter) components for each. Describe them by name and prop shape in your system instruction. Tell the model which to use and when. Build a small client-side registry that maps name to component. Done.",
+      },
+      {
+        type: "paragraph",
+        text: "The full A2UI specification and component reference lives at [a2ui.org](https://a2ui.org). The Google Cloud reference implementation with ADK and Gemini Enterprise integration is on GitHub. This portfolio's implementation, the one running in the corner of this page, is intentionally readable. No build step, no separate service, one route handler, four catalog components.",
+      },
+      {
+        type: "paragraph",
+        text: "The next time a user asks your agent for directions and it types out an address instead of dropping a pin, that is not a model problem. That is a medium problem. And now you know how to fix it.",
+      },
+    ],
+  },
   {
     slug: "beyond-text-gemini-embedding-2",
     title:
@@ -496,8 +699,8 @@ if query.strip():
         type: "list",
         items: [
           "**Cloud Sync**: Connect the indexing pipeline to a Google Drive or Dropbox API to automatically catalog cloud uploads.",
-          "**Unified Workspace Search**: Point the model at a mixed directory of PDFs, receipts, and screen recordings to create a personal local search engine."
-        ]
+          "**Unified Workspace Search**: Point the model at a mixed directory of PDFs, receipts, and screen recordings to create a personal local search engine.",
+        ],
       },
       {
         type: "paragraph",

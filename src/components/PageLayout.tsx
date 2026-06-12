@@ -10,9 +10,10 @@ import { motion } from "framer-motion";
 
 interface PageLayoutProps {
   children: React.ReactNode;
+  themeTogglePosition?: "left" | "right";
 }
 
-export default function PageLayout({ children }: PageLayoutProps) {
+export default function PageLayout({ children, themeTogglePosition = "right" }: PageLayoutProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -44,6 +45,7 @@ export default function PageLayout({ children }: PageLayoutProps) {
       <FloatingThemeToggle
         theme={theme ?? "dark"}
         onToggle={handleThemeToggle}
+        position={themeTogglePosition}
       />
     </div>
   );

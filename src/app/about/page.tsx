@@ -192,7 +192,7 @@ export default function AboutPage() {
               <motion.span whileHover={{ scale: 1.2, rotate: 10 }}>
                 <MapPin className="w-4 h-4 text-primary" />
               </motion.span>
-              {about.location} — {about.tagline}
+              {about.location} - {about.tagline}
             </motion.p>
           </motion.div>
 
