@@ -2,13 +2,12 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
 
 export default function LandingIntro() {
   const quickLinks = [
-    { label: "About Me", href: "/about", description: "My story & skills" },
-    { label: "Experience", href: "/experience", description: "Work history" },
-    { label: "Projects", href: "/projects", description: "Things I've built" },
+    { label: "About Me", href: "/about", description: "My story, experience & skills" },
+    { label: "Blogs", href: "/blogs", description: "Things I write about" },
   ];
 
   return (
@@ -21,7 +20,7 @@ export default function LandingIntro() {
         className="text-center mb-12"
       >
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-          <Sparkles className="w-4 h-4" />
+          <Compass className="w-4 h-4" />
           <span>Explore my work</span>
         </div>
         <h2
@@ -32,7 +31,7 @@ export default function LandingIntro() {
         </h2>
       </motion.div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
         {quickLinks.map((link, index) => (
           <motion.div
             key={link.href}

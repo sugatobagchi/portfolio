@@ -4,23 +4,29 @@ import PageLayout from "@/components/PageLayout";
 import { about } from "@/data/about";
 import { skills } from "@/data/skills";
 import { achievements } from "@/data/achievements";
+import { experience } from "@/data/experience";
+import { volunteer } from "@/data/volunteer";
 import { motion } from "framer-motion";
 import {
   Code2,
   Layers,
-  Palette,
   Rocket,
   Target,
   GraduationCap,
   Users,
   MapPin,
   Trophy,
-  Sparkles,
+  Cpu,
   Zap,
   Heart,
+  Briefcase,
+  Calendar,
+  ExternalLink,
+  GitMerge,
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import Link from "next/link";
 
 const skillCategories = [
   {
@@ -66,7 +72,49 @@ const itemVariants = {
   },
 };
 
-// Interactive paragraph component with hover highlight
+const cardVariants = {
+  hidden: { opacity: 0, x: -40 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+function SectionTitle({
+  icon: Icon,
+  iconColor,
+  iconBg,
+  title,
+  animate,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  iconColor: string;
+  iconBg: string;
+  title: string;
+  animate?: object;
+}) {
+  return (
+    <div className="flex items-center gap-4 mb-10">
+      <motion.div
+        className={`w-12 h-12 rounded-2xl ${iconBg} flex items-center justify-center shadow-lg flex-shrink-0`}
+        whileHover={{ rotate: 10, scale: 1.1 }}
+        animate={animate}
+        transition={{ duration: 0.4 }}
+      >
+        <Icon className={`w-6 h-6 ${iconColor}`} />
+      </motion.div>
+      <h2
+        className="text-2xl sm:text-3xl font-bold"
+        style={{ fontFamily: "var(--font-heading)" }}
+      >
+        {title}
+      </h2>
+      <div className="flex-1 h-px bg-gradient-to-r from-border/60 to-transparent ml-2" />
+    </div>
+  );
+}
+
 function InteractiveParagraph({
   children,
   delay = 0,
@@ -82,8 +130,8 @@ function InteractiveParagraph({
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
-      whileHover={{ x: 8 }}
-      className={`relative pl-3 sm:pl-6 border-l-2 transition-all cursor-default ${
+      whileHover={{ x: 6 }}
+      className={`relative pl-4 sm:pl-6 border-l-2 transition-all cursor-default ${
         highlight
           ? "border-primary bg-primary/5 py-3 sm:py-4 pr-3 sm:pr-4 rounded-r-xl"
           : "border-border/50 hover:border-primary"
@@ -98,7 +146,6 @@ function InteractiveParagraph({
   );
 }
 
-// Animated highlight text
 function Highlight({ children }: { children: React.ReactNode }) {
   return (
     <motion.span
@@ -124,12 +171,12 @@ export default function AboutPage() {
     <PageLayout>
       <div className="min-h-screen py-16 md:py-24 px-3 sm:px-6">
         <div className="max-w-3xl mx-auto">
-          {/* Hero Section with floating elements */}
+          {/* ── HERO ── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
-            className="text-center mb-12 relative"
+            className="text-center mb-16 relative"
           >
             {/* Floating decorative elements */}
             <motion.div
@@ -149,7 +196,6 @@ export default function AboutPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-6"
             >
-              {/* Animated ring */}
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -160,7 +206,6 @@ export default function AboutPage() {
                 transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-0 rounded-full border border-accent/20 scale-[1.35]"
               />
-
               <Image
                 src="/me.png"
                 alt={about.name}
@@ -192,17 +237,17 @@ export default function AboutPage() {
               <motion.span whileHover={{ scale: 1.2, rotate: 10 }}>
                 <MapPin className="w-4 h-4 text-primary" />
               </motion.span>
-              {about.location} - {about.tagline}
+              {about.location}, {about.tagline}
             </motion.p>
           </motion.div>
 
-          {/* Interactive Prose Content */}
-          <motion.article
+          {/* ── BIO ── */}
+          <motion.section
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="space-y-4 mb-16"
+            className="space-y-4 mb-20"
           >
             <InteractiveParagraph delay={0.1}>
               Hey, I am a <Highlight>Software Engineer</Highlight> who genuinely
@@ -227,17 +272,10 @@ export default function AboutPage() {
                 clean design, usability, and thoughtful engineering
               </Highlight>
               . I care about building applications that feel polished,
-              purposeful, and easy to use — not just technically correct.
+              purposeful, and easy to use. Not just technically correct.
             </InteractiveParagraph>
 
             <InteractiveParagraph delay={0.25}>
-              I see writing code as a continuous journey toward mastering my
-              craft. Each project is an opportunity to learn, refine my skills,
-              and build something that balances aesthetics with solid
-              functionality.
-            </InteractiveParagraph>
-
-            <InteractiveParagraph delay={0.3}>
               With experience across{" "}
               <Highlight>backend and full-stack projects</Highlight>, I am
               comfortable approaching problems from multiple angles and
@@ -245,33 +283,31 @@ export default function AboutPage() {
               and long-term maintainability in everything I build.
             </InteractiveParagraph>
 
-            <InteractiveParagraph delay={0.35} highlight>
+            <InteractiveParagraph delay={0.3} highlight>
               <Target className="inline-block w-5 h-5 mr-2 text-primary" />
               My goal is not just to meet expectations, but to exceed them by
               delivering high-quality, impactful work that people can trust and
               rely on.
             </InteractiveParagraph>
-          </motion.article>
+          </motion.section>
 
-          {/* Currently Learning - Interactive Card */}
+          {/* ── CURRENTLY LEARNING ── */}
           <motion.section
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="mb-8"
+            className="mb-20"
           >
             <motion.div
               whileHover={{ scale: 1.02, y: -4 }}
               className="card p-5 sm:p-8 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 border-primary/20 relative overflow-hidden group cursor-default"
             >
-              {/* Animated background gradient */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity"
                 animate={{ x: ["-100%", "100%"] }}
                 transition={{ duration: 3, repeat: Infinity }}
               />
-
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
                   <motion.div
@@ -307,81 +343,20 @@ export default function AboutPage() {
             </motion.div>
           </motion.section>
 
-          {/* Community Section - Interactive Card */}
+          {/* ── SKILLS ── */}
           <motion.section
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="mb-16"
+            className="mb-20"
           >
-            <motion.div
-              whileHover={{ scale: 1.02, y: -4 }}
-              className="card p-5 sm:p-8 relative overflow-hidden group cursor-default"
-            >
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <motion.div
-                    className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"
-                    whileHover={{ rotate: -10 }}
-                  >
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      <Users className="w-6 h-6 text-primary" />
-                    </motion.div>
-                  </motion.div>
-                  <h3
-                    className="text-lg sm:text-xl font-bold"
-                    style={{ fontFamily: "var(--font-heading)" }}
-                  >
-                    Community & Mentorship
-                  </h3>
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                  >
-                    <Heart className="w-4 h-4 text-red-400 ml-auto" />
-                  </motion.div>
-                </div>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  I am deeply invested in people and the communities that grow
-                  around technology. I have spent years actively building and
-                  leading developer communities, where my focus has been
-                  creating spaces that encourage learning, collaboration, and
-                  confidence. Through organizing and hosting tech events,
-                  mentoring students and early-career developers, and speaking
-                  publicly about technology and growth, I have worked to make
-                  learning feel accessible and empowering.
-                </p>
-              </div>
-            </motion.div>
-          </motion.section>
-
-          {/* Skills Section - Interactive Grid */}
-          <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="mb-16"
-          >
-            <div className="flex flex-col items-center gap-3 mb-10 text-center">
-              <motion.div
-                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
-                whileHover={{ rotate: 180 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Sparkles className="w-7 h-7 text-primary" />
-              </motion.div>
-              <h2
-                className="text-2xl sm:text-3xl font-bold"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Skills & Technologies
-              </h2>
-            </div>
+            <SectionTitle
+              icon={Cpu}
+              iconColor="text-primary"
+              iconBg="bg-gradient-to-br from-primary/20 to-accent/20"
+              title="Skills & Technologies"
+            />
 
             <motion.div
               variants={containerVariants}
@@ -437,32 +412,136 @@ export default function AboutPage() {
             </motion.div>
           </motion.section>
 
-          {/* Achievements - Interactive List */}
+          {/* ── WORK EXPERIENCE ── */}
           <motion.section
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="mb-20"
           >
-            <div className="flex flex-col items-center gap-3 mb-8 text-center">
+            <SectionTitle
+              icon={Briefcase}
+              iconColor="text-primary"
+              iconBg="bg-gradient-to-br from-primary/15 to-blue-500/15"
+              title="Work Experience"
+            />
+
+            <div className="relative">
+              {/* Timeline vertical line */}
+              <div className="absolute left-3.5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-accent to-primary/10" />
+
               <motion.div
-                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 flex items-center justify-center"
-                whileHover={{ rotate: -10 }}
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="space-y-10"
               >
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <Trophy className="w-7 h-7 text-amber-500" />
-                </motion.div>
+                {experience.map((exp, idx) => (
+                  <motion.div
+                    key={exp.company}
+                    variants={cardVariants}
+                    className="relative pl-12"
+                  >
+                    {/* Timeline node */}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: idx * 0.1 }}
+                      className="absolute left-0 w-7 h-7 rounded-full bg-background border-[3px] border-primary flex items-center justify-center shadow-md shadow-primary/20"
+                    >
+                      <Briefcase className="w-3 h-3 text-primary" />
+                    </motion.div>
+
+                    <motion.div
+                      whileHover={{ y: -4, scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
+                      className="card p-4 sm:p-6 hover:shadow-xl hover:shadow-primary/10 transition-all"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
+                        <div>
+                          <h3
+                            className="text-lg sm:text-xl font-bold mb-1"
+                            style={{ fontFamily: "var(--font-heading)" }}
+                          >
+                            {exp.role}
+                          </h3>
+                          <p className="text-primary font-semibold flex items-center gap-2 flex-wrap text-sm">
+                            <span>
+                              @{" "}
+                              {exp.url ? (
+                                <Link
+                                  href={exp.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="hover:underline inline-flex items-center gap-1"
+                                >
+                                  {exp.company}
+                                  <ExternalLink className="w-3 h-3" />
+                                </Link>
+                              ) : (
+                                exp.company
+                              )}
+                            </span>
+                            {exp.location && (
+                              <>
+                                <span className="w-1 h-1 rounded-full bg-muted-foreground" />
+                                <span className="text-muted-foreground text-sm flex items-center gap-1 font-normal">
+                                  <MapPin className="w-3 h-3" />
+                                  {exp.location}
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full w-fit shrink-0">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {exp.period}
+                        </div>
+                      </div>
+
+                      <ul className="space-y-3">
+                        {exp.details.map((detail, i) => (
+                          <motion.li
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.08, duration: 0.4 }}
+                            className="flex items-start gap-3 text-muted-foreground"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                            <span
+                              dangerouslySetInnerHTML={{ __html: detail }}
+                              className="[&>strong]:text-primary [&>strong]:font-semibold leading-relaxed text-sm sm:text-base"
+                            />
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  </motion.div>
+                ))}
               </motion.div>
-              <h2
-                className="text-2xl sm:text-3xl font-bold"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Achievements
-              </h2>
             </div>
+          </motion.section>
+
+          {/* ── ACHIEVEMENTS ── */}
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-20"
+          >
+            <SectionTitle
+              icon={Trophy}
+              iconColor="text-amber-500"
+              iconBg="bg-gradient-to-br from-amber-400/20 to-orange-500/20"
+              title="Awards & Achievements"
+              animate={{ rotate: [0, 8, -8, 0] }}
+            />
 
             <motion.div
               variants={containerVariants}
@@ -475,11 +554,11 @@ export default function AboutPage() {
                 <motion.div
                   key={i}
                   variants={itemVariants}
-                  whileHover={{ x: 12, scale: 1.02 }}
-                  className="flex items-start gap-4 p-4 sm:p-5 rounded-xl bg-muted/30 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent border border-transparent hover:border-primary/20 transition-all cursor-default group"
+                  whileHover={{ x: 10, scale: 1.02 }}
+                  className="flex items-start gap-4 p-4 sm:p-5 rounded-xl bg-muted/30 hover:bg-gradient-to-r hover:from-amber-500/5 hover:to-transparent border border-transparent hover:border-amber-500/20 transition-all cursor-default group"
                 >
                   <motion.span
-                    className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"
+                    className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0"
                     animate={{ scale: [1, 1.5, 1] }}
                     transition={{
                       duration: 1.5,
@@ -488,12 +567,120 @@ export default function AboutPage() {
                     }}
                   />
                   <p
-                    className="text-sm sm:text-base text-muted-foreground leading-relaxed [&>strong]:text-primary [&>strong]:font-semibold group-hover:text-foreground transition-colors"
+                    className="text-sm sm:text-base text-muted-foreground leading-relaxed [&>strong]:text-amber-500 [&>strong]:font-semibold group-hover:text-foreground transition-colors"
                     dangerouslySetInnerHTML={{ __html: ach }}
                   />
                 </motion.div>
               ))}
             </motion.div>
+          </motion.section>
+
+          {/* ── COMMUNITY ── */}
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-20"
+          >
+            <SectionTitle
+              icon={Users}
+              iconColor="text-primary"
+              iconBg="bg-gradient-to-br from-primary/15 to-accent/15"
+              title="Community & Mentorship"
+            />
+
+            {/* Summary blurb */}
+            <motion.div
+              whileHover={{ scale: 1.01, y: -3 }}
+              className="card p-5 sm:p-7 mb-6 relative overflow-hidden group cursor-default border-primary/10"
+            >
+              <div className="flex items-start gap-3">
+                <motion.div
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ duration: 1.8, repeat: Infinity }}
+                >
+                  <Heart className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                </motion.div>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  I am deeply invested in people and the communities that grow
+                  around technology.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Volunteer timeline */}
+            <div className="relative">
+              <div className="absolute left-3.5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-accent via-primary/50 to-transparent" />
+
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="space-y-6"
+              >
+                {volunteer.map((item, idx) => (
+                  <motion.div
+                    key={item.organization}
+                    variants={cardVariants}
+                    className="relative pl-12"
+                  >
+                    {/* Node */}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: idx * 0.1 }}
+                      className="absolute left-0 w-7 h-7 rounded-full bg-background border-[3px] border-accent flex items-center justify-center shadow-md shadow-accent/20"
+                    >
+                      <GitMerge className="w-3 h-3 text-accent" />
+                    </motion.div>
+
+                    <motion.div
+                      whileHover={{ y: -4, scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
+                      className="card p-4 sm:p-5 hover:shadow-lg hover:shadow-accent/10 transition-all"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                        <div>
+                          <h3
+                            className="text-base sm:text-lg font-bold mb-0.5"
+                            style={{ fontFamily: "var(--font-heading)" }}
+                          >
+                            {item.role}
+                          </h3>
+                          <p className="text-accent font-medium text-sm flex items-center gap-1 flex-wrap">
+                            @{" "}
+                            {item.url ? (
+                              <Link
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline inline-flex items-center gap-1 text-accent"
+                              >
+                                {item.organization}
+                                <ExternalLink className="w-3 h-3" />
+                              </Link>
+                            ) : (
+                              item.organization
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full w-fit shrink-0">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {item.period}
+                        </div>
+                      </div>
+                      <p
+                        className="text-sm text-muted-foreground leading-relaxed [&>strong]:text-foreground [&>strong]:font-semibold"
+                        dangerouslySetInnerHTML={{ __html: item.description }}
+                      />
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </motion.section>
         </div>
       </div>

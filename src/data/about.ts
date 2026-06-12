@@ -13,7 +13,7 @@ export const about = {
     myApproach: {
       title: "My Approach",
       content:
-        "I bring a fresh perspective to every project, along with a strong focus on clean design, usability, and thoughtful engineering. I care about building applications that feel polished, purposeful, and easy to use — not just technically correct.",
+        "I bring a fresh perspective to every project, along with a strong focus on clean design, usability, and thoughtful engineering. I care about building applications that feel polished, purposeful, and easy to use. Not just technically correct.",
     },
     craftAndGrowth: {
       title: "Craft & Growth",

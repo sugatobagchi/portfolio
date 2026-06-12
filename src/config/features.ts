@@ -8,28 +8,10 @@ export interface Feature {
 export const features: Feature[] = [
   {
     id: "about",
-    label: "About",
+    label: "About Me",
     href: "/about",
     enabled: true,
   },
-  {
-    id: "experience",
-    label: "Experience",
-    href: "/experience",
-    enabled: true,
-  },
-//   {
-//     id: "top-100",
-//     label: "Top-100",
-//     href: "/top-100",
-//     enabled: true,
-//   },
-//   {
-//     id: "projects",
-//     label: "Projects",
-//     href: "/projects",
-//     enabled: true,
-//   },
   {
     id: "blogs",
     label: "Blogs",
@@ -37,3 +19,4 @@ export const features: Feature[] = [
     enabled: true,
   },
 ];
+
