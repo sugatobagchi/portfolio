@@ -97,10 +97,20 @@ const renderParagraphText = (text?: string) => {
 export default function BlogDetailClient({ post }: BlogDetailClientProps) {
   const [mounted, setMounted] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll();
+  const [pct, setPct] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    return scrollYProgress.on("change", (v) => setPct(Math.round(v * 100)));
+  }, [scrollYProgress, mounted]);
+
+  const totalMinutes = post ? parseInt(post.readTime) || 5 : 5;
+  const remainingMinutes = Math.max(0, Math.ceil(totalMinutes * (1 - pct / 100)));
 
   if (!post) {
     return (
@@ -129,7 +139,7 @@ export default function BlogDetailClient({ post }: BlogDetailClientProps) {
 
   return (
     <PageLayout themeTogglePosition="left">
-      <div className="min-h-screen relative overflow-hidden">
+      <div className="min-h-screen relative">
         {/* Diagonal Ropes Background */}
         <DiagonalRopesBackground />
 
@@ -166,7 +176,7 @@ export default function BlogDetailClient({ post }: BlogDetailClientProps) {
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" />
-                {post.readTime}
+                {pct === 0 ? post.readTime : remainingMinutes === 0 ? "Finished" : `${remainingMinutes} min left`}
               </span>
             </motion.div>
 

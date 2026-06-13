@@ -151,7 +151,7 @@ export default function A2UIChatWidget() {
   const lastUserIdx = messages.reduce((acc, m, i) => (m.role === "user" ? i : acc), -1);
 
   return (
-    <div className="fixed bottom-6 right-24 z-50">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-8 z-50">
       <AnimatePresence mode="wait">
         {isOpen ? (
           <motion.div
