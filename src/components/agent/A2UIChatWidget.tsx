@@ -211,7 +211,7 @@ export default function A2UIChatWidget() {
                       className={`rounded-xl px-3 py-2 text-sm leading-relaxed ${
                         isAgent
                           ? "bg-muted text-foreground border border-border"
-                          : "ml-6 bg-emerald-600 text-white border border-emerald-700/40 shadow-sm dark:bg-emerald-500/25 dark:text-emerald-50 dark:border-emerald-500/40"
+                          : "ml-6 bg-chat-user-bg text-chat-user-text border border-chat-user-border shadow-sm"
                       }`}
                     >
                       {message.content}
