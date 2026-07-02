@@ -13,7 +13,7 @@ export const siteContent = {
   siteUrl: "https://sugatobagchi.com",
   profileImage: "/me.png",
   // Bump when replacing public/me.png so Next.js image cache and CDNs pick up the new file
-  profileImageVersion: "2026-07-02",
+  profileImageVersion: "2026-07-01",
 
   seo: {
     title: "Sugato Bagchi | Software Engineer",
