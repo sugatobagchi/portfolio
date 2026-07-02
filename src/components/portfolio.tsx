@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { about } from "@/data/about";
+import { profileImageSrc } from "@/content";
 import Header from "./Header";
 import Hero from "./Hero";
 import LandingIntro from "./LandingIntro";
@@ -26,7 +27,7 @@ export default function Portfolio() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header navItems={navItems} />
       <main className="flex-1 w-full max-w-6xl mx-auto px-6">
-        <Hero name={about.name} tagline={about.intro} avatarUrl={"/me.png"} />
+        <Hero name={about.name} tagline={about.intro} avatarUrl={profileImageSrc} />
         <LandingIntro />
       </main>
       <Footer />

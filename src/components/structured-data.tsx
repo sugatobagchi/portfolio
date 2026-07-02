@@ -1,11 +1,11 @@
-import { siteContent } from "@/content";
+import { profileImageUrl, siteContent } from "@/content";
 
 interface StructuredDataProps {
   type?: "website" | "person" | "both";
 }
 
 export function StructuredData({ type = "both" }: StructuredDataProps) {
-  const { name, title, tagline, siteUrl, profileImageUrl, seo } = siteContent;
+  const { name, title, tagline, siteUrl, seo } = siteContent;
 
   const websiteSchema = {
     "@type": "WebSite",

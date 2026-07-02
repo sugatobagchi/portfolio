@@ -12,7 +12,8 @@ export const siteContent = {
   // URLs and Images
   siteUrl: "https://sugatobagchi.com",
   profileImage: "/me.png",
-  profileImageUrl: "https://sugatobagchi.com/me.png", // For OG images (needs absolute URL)
+  // Bump when replacing public/me.png so Next.js image cache and CDNs pick up the new file
+  profileImageVersion: "2026-07-02",
 
   seo: {
     title: "Sugato Bagchi | Software Engineer",
@@ -44,6 +45,9 @@ export const siteContent = {
     mutedTextColor: "#94a3b8",
   },
 };
+
+export const profileImageSrc = `${siteContent.profileImage}?v=${siteContent.profileImageVersion}`;
+export const profileImageUrl = `${siteContent.siteUrl}${profileImageSrc}`;
 
 // Re-export existing data for convenience
 export * from "@/data/about";

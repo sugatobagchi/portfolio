@@ -2,6 +2,7 @@
 
 import PageLayout from "@/components/PageLayout";
 import { about } from "@/data/about";
+import { profileImageSrc } from "@/content";
 import { skills } from "@/data/skills";
 import { achievements } from "@/data/achievements";
 import { experience } from "@/data/experience";
@@ -207,7 +208,7 @@ export default function AboutPage() {
                 className="absolute inset-0 rounded-full border border-accent/20 scale-[1.35]"
               />
               <Image
-                src="/me.png"
+                src={profileImageSrc}
                 alt={about.name}
                 fill
                 className="object-cover object-top rounded-full shadow-2xl"

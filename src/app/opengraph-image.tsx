@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { siteContent } from "@/content";
+import { profileImageUrl, siteContent } from "@/content";
 
 export const runtime = "edge";
 
@@ -11,7 +11,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  const { name, profileImageUrl, theme } = siteContent;
+  const { name, theme } = siteContent;
 
   return new ImageResponse(
     <div

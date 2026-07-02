@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { blogs } from "@/data/blogs";
-import { siteContent } from "@/content";
+import { profileImageUrl } from "@/content";
 
 export const runtime = "edge";
 
@@ -41,7 +41,7 @@ export default async function Image({ params }: ImageProps) {
     );
   }
 
-  const avatarUrl = siteContent.profileImageUrl || "https://sugatobagchi.com/me.png";
+  const avatarUrl = profileImageUrl;
 
   return new ImageResponse(
     (
