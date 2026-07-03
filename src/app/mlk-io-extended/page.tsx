@@ -35,6 +35,11 @@ const primaryLinks: LinkItem[] = [
     icon: ExternalLink,
   },
   {
+    label: "Blog Post",
+    href: "/blogs/webgpu-gemma-agents",
+    icon: FileText,
+  },
+  {
     label: "Slides",
     href: "https://docs.google.com/presentation/d/e/2PACX-1vQlV1-8_ba3Sk5ic8BxhmIf8KQoy_hR0k1gVAGHG3n-ivjon2HHa2-UZwI0TvagrivuDWgiCZlE-mLQ/pub",
     icon: Presentation,
