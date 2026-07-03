@@ -3,11 +3,53 @@
 import React, { useState, useRef, useEffect } from "react";
 import PageLayout from "@/components/PageLayout";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowLeft, Calendar, Clock, Copy, Check, ChevronDown } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Copy,
+  Check,
+  ChevronDown,
+  Github,
+  ExternalLink,
+  Presentation,
+  Globe,
+  Cpu,
+  Sparkles,
+  Bot,
+  FileText,
+  LayoutGrid,
+  LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { BlogPost } from "@/data/blogs";
 import SocialIcons from "@/components/SocialIcons";
 import A2UIChatWidget from "@/components/agent/A2UIChatWidget";
+
+const getIcon = (name?: string): LucideIcon => {
+  switch (name) {
+    case "Github":
+      return Github;
+    case "ExternalLink":
+      return ExternalLink;
+    case "Presentation":
+      return Presentation;
+    case "Globe":
+      return Globe;
+    case "Cpu":
+      return Cpu;
+    case "Sparkles":
+      return Sparkles;
+    case "Bot":
+      return Bot;
+    case "FileText":
+      return FileText;
+    case "LayoutGrid":
+      return LayoutGrid;
+    default:
+      return ExternalLink;
+  }
+};
 
 interface BlogDetailClientProps {
   post: BlogPost | undefined;
@@ -360,6 +402,141 @@ export default function BlogDetailClient({ post }: BlogDetailClientProps) {
                 }
               })}
             </motion.article>
+
+            {/* Project Links & Resources Section */}
+            {(post.githubUrl || post.liveUrl || post.slidesUrl || (post.resources && post.resources.length > 0)) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.25 }}
+                className="mt-16 pt-12 border-t border-border/50"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  {/* Left Column: Project Links */}
+                  {(post.githubUrl || post.liveUrl || post.slidesUrl) && (
+                    <div className="flex flex-col gap-6">
+                      <div>
+                        <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+                          Project & Code
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Access the source code, live application, and presentation slides.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        {post.githubUrl && (
+                          <motion.a
+                            href={post.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ y: -2 }}
+                            className="group relative flex items-center gap-4 p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 shadow-sm"
+                          >
+                            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 group-hover:bg-primary/20 transition-colors">
+                              <Github className="w-5 h-5" />
+                            </span>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-1">
+                                <span className="text-sm font-semibold text-foreground">GitHub Repository</span>
+                                <ExternalLink className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                              <span className="text-xs text-muted-foreground font-mono">
+                                {post.githubUrl.replace("https://github.com/", "")}
+                              </span>
+                            </div>
+                          </motion.a>
+                        )}
+
+                        {post.liveUrl && (
+                          <motion.a
+                            href={post.liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ y: -2 }}
+                            className="group relative flex items-center gap-4 p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 shadow-sm"
+                          >
+                            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 group-hover:bg-primary/20 transition-colors">
+                              <Globe className="w-5 h-5" />
+                            </span>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-1">
+                                <span className="text-sm font-semibold text-foreground">Live Application</span>
+                                <ExternalLink className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {post.liveUrl.replace("https://", "")}
+                              </span>
+                            </div>
+                          </motion.a>
+                        )}
+
+                        {post.slidesUrl && (
+                          <motion.a
+                            href={post.slidesUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ y: -2 }}
+                            className="group relative flex items-center gap-4 p-4 rounded-xl border border-accent/20 bg-accent/5 hover:bg-accent/10 hover:border-accent/40 transition-all duration-300 shadow-sm"
+                          >
+                            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent/10 text-accent border border-accent/20 group-hover:bg-accent/20 transition-colors">
+                              <Presentation className="w-5 h-5" />
+                            </span>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-1">
+                                <span className="text-sm font-semibold text-foreground">Presentation Slides</span>
+                                <ExternalLink className="w-3 h-3 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                              <span className="text-xs text-muted-foreground">View presentation slides</span>
+                            </div>
+                          </motion.a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Right Column: Resources */}
+                  {post.resources && post.resources.length > 0 && (
+                    <div className="flex flex-col gap-6">
+                      <div>
+                        <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+                          Developer Resources
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Useful libraries, official documentation, and community links.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        {post.resources.map((res, rIdx) => {
+                          const ResIcon = getIcon(res.iconName);
+                          return (
+                            <motion.a
+                              key={rIdx}
+                              href={res.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              whileHover={{ y: -1, scale: 1.01 }}
+                              className="group flex items-center gap-3 p-3 rounded-xl border border-border/40 bg-card/40 hover:bg-card/90 hover:border-border transition-all duration-200"
+                            >
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                <ResIcon className="w-4 h-4" />
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                                  {res.label}
+                                </p>
+                              </div>
+                              <ExternalLink className="w-3 h-3 text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                            </motion.a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>

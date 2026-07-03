@@ -224,4 +224,49 @@ if (aiText.includes("[SEARCH:")) {
       widget: "socials",
     },
   ],
+  githubUrl: "https://github.com/sugatobagchi/gemma-agents-webgpu",
+  liveUrl: "https://edge.sugatobagchi.com/",
+  slidesUrl: "https://docs.google.com/presentation/d/e/2PACX-1vQlV1-8_ba3Sk5ic8BxhmIf8KQoy_hR0k1gVAGHG3n-ivjon2HHa2-UZwI0TvagrivuDWgiCZlE-mLQ/pub",
+  resources: [
+    {
+      label: "AI Edge",
+      url: "https://developers.google.com/edge",
+      iconName: "Globe",
+    },
+    {
+      label: "AI Edge Gallery",
+      url: "https://developers.google.com/edge/gallery",
+      iconName: "LayoutGrid",
+    },
+    {
+      label: "LiteRT",
+      url: "https://developers.google.com/edge/litert",
+      iconName: "Cpu",
+    },
+    {
+      label: "LiteRT-LM Docs",
+      url: "https://developers.google.com/edge/litert-lm/overview",
+      iconName: "FileText",
+    },
+    {
+      label: "LiteRT-LM GitHub",
+      url: "https://github.com/google-ai-edge/LiteRT-LM",
+      iconName: "Github",
+    },
+    {
+      label: "MediaPipe",
+      url: "https://developers.google.com/edge/mediapipe/solutions/guide",
+      iconName: "Sparkles",
+    },
+    {
+      label: "Gemma 4",
+      url: "https://deepmind.google/models/gemma/gemma-4/",
+      iconName: "Bot",
+    },
+    {
+      label: "AI Studio",
+      url: "https://aistudio.google.com/",
+      iconName: "ExternalLink",
+    },
+  ],
 };

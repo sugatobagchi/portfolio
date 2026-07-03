@@ -23,6 +23,12 @@ export interface BlogBlock {
   caption?: string;
 }
 
+export interface BlogPostLink {
+  label: string;
+  url: string;
+  iconName?: string;
+}
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -34,6 +40,10 @@ export interface BlogPost {
   gradientClass: string;
   coverImage?: string;
   content: BlogBlock[];
+  githubUrl?: string;
+  liveUrl?: string;
+  slidesUrl?: string;
+  resources?: BlogPostLink[];
 }
 
 export const blogs: BlogPost[] = [
