@@ -503,6 +503,137 @@ function ProgressBar() {
   );
 }
 
+interface Token {
+  type: string;
+  text: string;
+}
+
+function tokenize(code: string, language: string): Token[] {
+  let keywords = [
+    "import", "from", "const", "let", "var", "await", "async", "function",
+    "class", "return", "if", "else", "new", "extends", "export", "default",
+    "try", "catch", "finally", "for", "while", "do", "switch", "case",
+    "break", "continue", "throw", "instanceof", "typeof", "in", "of",
+    "null", "undefined", "true", "false", "void", "interface", "type", "as"
+  ];
+  if (language === "python") {
+    keywords = [
+      "import", "from", "def", "class", "return", "if", "elif", "else",
+      "try", "except", "finally", "for", "while", "break", "continue",
+      "in", "is", "not", "and", "or", "lambda", "with", "as", "pass",
+      "None", "True", "False", "yield", "raise", "assert", "global", "nonlocal"
+    ];
+  } else if (language === "bash") {
+    keywords = [
+      "npm", "install", "run", "npx", "git", "clone", "pull", "push",
+      "commit", "add", "checkout", "status", "diff", "cd", "mkdir", "echo",
+      "export", "alias", "if", "then", "else", "fi", "for", "in", "do",
+      "done", "while"
+    ];
+  }
+  const keywordSet = new Set(keywords);
+
+  const parts = [
+    "\\/\\*[\\s\\S]*?\\*\\/", // 1. Block comment
+    "\\/\\/[^\\n]*|#[^\\n]*", // 2. Line comment
+    "\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'|`(?:[^`\\\\]|\\\\.)*`", // 3. String
+    "\\b\\d+(?:\\.\\d+)?\\b", // 4. Number
+    "\\b[a-zA-Z_]\\w*(?=\\s*\\()", // 5. Function call
+    "\\b[a-zA-Z_]\\w*\\b", // 6. Identifier
+    "\\s+", // 7. Whitespace
+    "." // 8. Symbol
+  ];
+
+  const masterRegex = new RegExp("(" + parts.join(")|(") + ")", "g");
+  const tokens: Token[] = [];
+  let match;
+
+  while ((match = masterRegex.exec(code)) !== null) {
+    const text = match[0];
+    let type = "plain";
+
+    if (match[1]) {
+      type = "comment";
+    } else if (match[2]) {
+      type = "comment";
+    } else if (match[3]) {
+      type = "string";
+    } else if (match[4]) {
+      type = "number";
+    } else if (match[5]) {
+      type = "function";
+    } else if (match[6]) {
+      if (keywordSet.has(text)) {
+        type = "keyword";
+      } else if (/^[A-Z]/.test(text)) {
+        type = "type";
+      } else {
+        type = "plain";
+      }
+    } else if (match[7]) {
+      type = "whitespace";
+    } else {
+      type = "symbol";
+    }
+
+    tokens.push({ type, text });
+  }
+
+  return tokens;
+}
+
+function renderHighlightedCode(code: string, language: string) {
+  const tokens = tokenize(code, language);
+  return tokens.map((token, index) => {
+    switch (token.type) {
+      case "comment":
+        return (
+          <span key={index} className="text-zinc-500 italic select-none">
+            {token.text}
+          </span>
+        );
+      case "string":
+        return (
+          <span key={index} className="text-emerald-400 dark:text-emerald-300">
+            {token.text}
+          </span>
+        );
+      case "keyword":
+        return (
+          <span key={index} className="text-orange-500 dark:text-orange-400 font-semibold">
+            {token.text}
+          </span>
+        );
+      case "number":
+        return (
+          <span key={index} className="text-amber-500 dark:text-amber-400">
+            {token.text}
+          </span>
+        );
+      case "function":
+        return (
+          <span key={index} className="text-sky-400 dark:text-sky-300">
+            {token.text}
+          </span>
+        );
+      case "type":
+        return (
+          <span key={index} className="text-teal-400 dark:text-teal-300 font-medium">
+            {token.text}
+          </span>
+        );
+      case "symbol":
+        return (
+          <span key={index} className="text-zinc-400 dark:text-zinc-500">
+            {token.text}
+          </span>
+        );
+      default:
+        return <span key={index}>{token.text}</span>;
+    }
+  });
+}
+
 function CodeBlock({ code, language }: { code: string; language: string }) {
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -538,20 +669,29 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   };
 
   return (
-    <div ref={containerRef} className="code-block relative group/code">
-      <div className="code-block-header">
-        <span>{language}</span>
-        <button
-          onClick={handleCopy}
-          className="code-copy-btn flex items-center justify-center p-1.5 rounded hover:bg-white/10 transition-colors"
-          title={copied ? "Copied!" : "Copy code"}
-        >
-          {copied ? (
-            <Check className="w-3.5 h-3.5 text-green-400" />
-          ) : (
-            <Copy className="w-3.5 h-3.5" />
-          )}
-        </button>
+    <div ref={containerRef} className="code-block relative group/code border border-zinc-800/40 bg-zinc-950/80 shadow-lg backdrop-blur-sm">
+      <div className="flex items-center justify-between px-4 py-3 bg-zinc-950/90 border-b border-zinc-800/30">
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+          <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+          <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
+            {language}
+          </span>
+          <button
+            onClick={handleCopy}
+            className="text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer flex items-center justify-center p-1 rounded hover:bg-zinc-800/50"
+            title={copied ? "Copied!" : "Copy code"}
+          >
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
       </div>
 
       <motion.div
@@ -564,8 +704,8 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         }}
         className="relative overflow-hidden"
       >
-        <pre className="m-0">
-          <code>{code}</code>
+        <pre className="m-0 overflow-x-auto p-4 font-mono text-[13px] leading-relaxed select-text">
+          <code>{renderHighlightedCode(code, language)}</code>
         </pre>
 
         {isCollapsible && (

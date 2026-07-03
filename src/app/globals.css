@@ -429,6 +429,8 @@
     line-height: 1.7;
     color: hsl(210 40% 82%);
     margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
   }
 }
 

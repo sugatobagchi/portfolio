@@ -1,5 +1,6 @@
 import { a2uiBlog } from "./blogs/a2ui-portfolio-demo";
 import { geminiEmbeddingsBlog } from "./blogs/beyond-text-gemini-embedding-2";
+import { webgpuGemmaAgentsBlog } from "./blogs/webgpu-gemma-agents";
 
 export interface BlogBlock {
   type:
@@ -36,6 +37,7 @@ export interface BlogPost {
 }
 
 export const blogs: BlogPost[] = [
+  webgpuGemmaAgentsBlog,
   a2uiBlog,
   geminiEmbeddingsBlog,
 ];
