@@ -164,7 +164,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function MlkIoExtendedPage() {
+export default function BuildOnDeviceAiPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background px-4 py-12 text-foreground sm:px-6 sm:py-16">
       <HeroBackground />
@@ -216,7 +216,7 @@ export default function MlkIoExtendedPage() {
           transition={{ duration: 0.45, delay: 0.15 }}
           className="mb-8 max-w-xs text-center text-sm text-muted-foreground"
         >
-          Thanks for joining — here are the links from the talk.
+          Build On-Device AI — thanks for joining. Here are the links from the talk.
         </motion.p>
 
         <div className="flex w-full flex-col gap-3">

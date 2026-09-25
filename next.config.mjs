@@ -42,6 +42,12 @@ const nextConfig = {
       permanent: true,
     });
 
+    redirectsArray.push({
+      source: "/mlk-io-extended",
+      destination: "/build-on-device-ai",
+      permanent: true,
+    });
+
     return redirectsArray;
   },
 };

@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ML on Edge — Talk Resources",
+  title: "Build On-Device AI",
   description:
-    "Links from my talk on running AI on the edge — try the demo, grab the slides, explore the code, and connect.",
+    "Links from Build On-Device AI — try the demo, grab the slides, explore the code, and connect.",
   openGraph: {
-    title: "ML on Edge — Talk Resources",
+    title: "Build On-Device AI",
     description:
       "Try the demo, grab the slides, explore the code, and connect after the talk.",
-    url: "https://sugatobagchi.com/mlk-io-extended",
+    url: "https://sugatobagchi.com/build-on-device-ai",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "ML on Edge — Talk Resources",
+    title: "Build On-Device AI",
     description:
       "Try the demo, grab the slides, explore the code, and connect after the talk.",
   },
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function MlkIoExtendedLayout({
+export default function BuildOnDeviceAiLayout({
   children,
 }: {
   children: React.ReactNode;
